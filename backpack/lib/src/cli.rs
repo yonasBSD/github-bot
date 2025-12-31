@@ -13,7 +13,7 @@ pub struct Args {
     pub repo: String,
 
     /// Optional GitHub Personal Access Token (PAT) with 'repo' scope.
-    /// If not provided, the program will look for the GITHUB_TOKEN environment variable.
+    /// If not provided, the program will look for the `GITHUB_TOKEN` environment variable.
     #[arg(short, long)]
     pub token: Option<String>,
 }

@@ -13,12 +13,12 @@ pub const UPDATE_WAIT_SECS: u64 = 5;
 
 // --- GitHub API Data Structures ---
 
-#[derive(Deserialize, Debug, PartialEq)]
+#[derive(Deserialize, Debug, PartialEq, Eq)]
 pub struct User {
     pub login: String,
 }
 
-#[derive(Deserialize, Debug, PartialEq)]
+#[derive(Deserialize, Debug, PartialEq, Eq)]
 pub struct PullRequest {
     pub number: u64,
     pub title: String,
@@ -41,13 +41,12 @@ pub fn list_dependabot_prs(
     token: &str,
 ) -> Result<Vec<PullRequest>> {
     let url = format!(
-        "{}/repos/{}/{}/pulls?state=open&per_page=100",
-        GITHUB_API_BASE, owner, repo
+        "{GITHUB_API_BASE}/repos/{owner}/{repo}/pulls?state=open&per_page=100"
     );
 
     let response = client
         .get(&url)
-        .header(AUTHORIZATION, format!("Bearer {}", token))
+        .header(AUTHORIZATION, format!("Bearer {token}"))
         .header(ACCEPT, "application/vnd.github.v3+json")
         .header(USER_AGENT, "DependabotAutoMerger")
         .send()
@@ -57,8 +56,7 @@ pub fn list_dependabot_prs(
         let status = response.status();
         let body = response.text().unwrap_or_default();
         eprintln!(
-            "GitHub API Error (List PRs): Status {}, Body: {}",
-            status, body
+            "GitHub API Error (List PRs): Status {status}, Body: {body}"
         );
         return Err(anyhow::anyhow!(
             "Failed to list PRs from GitHub API. Check token scope."
@@ -102,15 +100,12 @@ pub fn process_pr(
         }
 
         let error_message = merge_response
-            .json::<MergeResponse>()
-            .map(|r| r.message.unwrap_or_else(|| "Unknown API Error".to_string()))
-            .unwrap_or_else(|_| "Failed to parse error response".to_string());
+            .json::<MergeResponse>().map_or_else(|_| "Failed to parse error response".to_string(), |r| r.message.unwrap_or_else(|| "Unknown API Error".to_string()));
 
         // 2. Handle failure based on reason
         if error_message.contains("Base branch was modified") {
             println!(
-                "  ⚠️ Merge FAILED (Attempt {}). Reason: Base branch modified.",
-                attempt
+                "  ⚠️ Merge FAILED (Attempt {attempt}). Reason: Base branch modified."
             );
 
             if attempt == MAX_MERGE_ATTEMPTS {
@@ -121,18 +116,15 @@ pub fn process_pr(
             // Otherwise, attempt to update the branch and retry
             if update_pr_branch(client, owner, repo, token, pr)? {
                 continue; // Continue to the next iteration (retry)
-            } else {
-                println!("  ⏭️ Branch update failed. Skipping PR (leaving open).");
-                return Ok(());
             }
-        } else {
-            // Other merge failures (e.g., CI failure, conflicts, etc.)
-            println!(
-                "  ⏭️ Merge FAILED. Reason: {}. Skipping PR (leaving open).",
-                error_message
-            );
+            println!("  ⏭️ Branch update failed. Skipping PR (leaving open).");
             return Ok(());
         }
+        // Other merge failures (e.g., CI failure, conflicts, etc.)
+        println!(
+            "  ⏭️ Merge FAILED. Reason: {error_message}. Skipping PR (leaving open)."
+        );
+        return Ok(());
     }
 
     Ok(())
@@ -158,7 +150,7 @@ pub fn attempt_merge(
 
     client
         .put(&merge_url)
-        .header(AUTHORIZATION, format!("Bearer {}", token))
+        .header(AUTHORIZATION, format!("Bearer {token}"))
         .header(ACCEPT, "application/vnd.github.v3+json")
         .header(CONTENT_TYPE, "application/json")
         .header(USER_AGENT, "DependabotAutoMerger")
@@ -182,7 +174,7 @@ pub fn update_pr_branch(
 
     let response = client
         .put(&update_url)
-        .header(AUTHORIZATION, format!("Bearer {}", token))
+        .header(AUTHORIZATION, format!("Bearer {token}"))
         .header(ACCEPT, "application/vnd.github.v3+json")
         .header(USER_AGENT, "DependabotAutoMerger")
         .header(CONTENT_TYPE, "application/json")
@@ -193,8 +185,7 @@ pub fn update_pr_branch(
 
     if status.is_success() || status.as_u16() == 202 {
         println!(
-            "  🔄 Branch update ACCEPTED (queued). Waiting {} seconds to allow update/CI run...",
-            UPDATE_WAIT_SECS
+            "  🔄 Branch update ACCEPTED (queued). Waiting {UPDATE_WAIT_SECS} seconds to allow update/CI run..."
         );
         thread::sleep(Duration::from_secs(UPDATE_WAIT_SECS));
         Ok(true)
@@ -203,8 +194,7 @@ pub fn update_pr_branch(
             .text()
             .unwrap_or_else(|_| "Failed to get error body".to_string());
         eprintln!(
-            "  🚨 Branch update FAILED. Status: {}. Body: {}",
-            status, error_message
+            "  🚨 Branch update FAILED. Status: {status}. Body: {error_message}"
         );
         Ok(false)
     }

@@ -2,6 +2,12 @@
 name = "github-bot"
 version = "0.1.0"
 edition = "2024"
+license = "MIT"
+description = "GitHub automation bot"
+repository = "https://github.com/yonasBSD/github-bot"
+readme = "README.md"
+keywords = ["github", "rust"]
+categories = ["template"]
 
 [dependencies]
 github-bot-lib = { path = "../lib" }
