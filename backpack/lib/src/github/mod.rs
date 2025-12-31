@@ -40,9 +40,7 @@ pub fn list_dependabot_prs(
     repo: &str,
     token: &str,
 ) -> Result<Vec<PullRequest>> {
-    let url = format!(
-        "{GITHUB_API_BASE}/repos/{owner}/{repo}/pulls?state=open&per_page=100"
-    );
+    let url = format!("{GITHUB_API_BASE}/repos/{owner}/{repo}/pulls?state=open&per_page=100");
 
     let response = client
         .get(&url)
@@ -55,9 +53,7 @@ pub fn list_dependabot_prs(
     if !response.status().is_success() {
         let status = response.status();
         let body = response.text().unwrap_or_default();
-        eprintln!(
-            "GitHub API Error (List PRs): Status {status}, Body: {body}"
-        );
+        eprintln!("GitHub API Error (List PRs): Status {status}, Body: {body}");
         return Err(anyhow::anyhow!(
             "Failed to list PRs from GitHub API. Check token scope."
         ));
@@ -99,14 +95,14 @@ pub fn process_pr(
             return Ok(());
         }
 
-        let error_message = merge_response
-            .json::<MergeResponse>().map_or_else(|_| "Failed to parse error response".to_string(), |r| r.message.unwrap_or_else(|| "Unknown API Error".to_string()));
+        let error_message = merge_response.json::<MergeResponse>().map_or_else(
+            |_| "Failed to parse error response".to_string(),
+            |r| r.message.unwrap_or_else(|| "Unknown API Error".to_string()),
+        );
 
         // 2. Handle failure based on reason
         if error_message.contains("Base branch was modified") {
-            println!(
-                "  ⚠️ Merge FAILED (Attempt {attempt}). Reason: Base branch modified."
-            );
+            println!("  ⚠️ Merge FAILED (Attempt {attempt}). Reason: Base branch modified.");
 
             if attempt == MAX_MERGE_ATTEMPTS {
                 println!("  ⏭️ Final attempt failed. Skipping PR (leaving open).");
@@ -121,9 +117,7 @@ pub fn process_pr(
             return Ok(());
         }
         // Other merge failures (e.g., CI failure, conflicts, etc.)
-        println!(
-            "  ⏭️ Merge FAILED. Reason: {error_message}. Skipping PR (leaving open)."
-        );
+        println!("  ⏭️ Merge FAILED. Reason: {error_message}. Skipping PR (leaving open).");
         return Ok(());
     }
 
@@ -193,9 +187,7 @@ pub fn update_pr_branch(
         let error_message = response
             .text()
             .unwrap_or_else(|_| "Failed to get error body".to_string());
-        eprintln!(
-            "  🚨 Branch update FAILED. Status: {status}. Body: {error_message}"
-        );
+        eprintln!("  🚨 Branch update FAILED. Status: {status}. Body: {error_message}");
         Ok(false)
     }
 }
