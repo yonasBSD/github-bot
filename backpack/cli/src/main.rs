@@ -10,10 +10,12 @@ use github_bot_lib::github;
 
 fn main() -> Result<()> {
     #[cfg(not(target_arch = "wasm32"))]
-    setup_panic!(metadata!()
-        .authors("Acme Inc. <support@example.com")
-        .homepage("www.example.com")
-        .support("- Open a support request by email to support@example.com"));
+    setup_panic!(
+        metadata!()
+            .authors("Acme Inc. <support@example.com")
+            .homepage("www.example.com")
+            .support("- Open a support request by email to support@example.com")
+    );
 
     // 1. Parse command-line arguments
     let args = Args::parse();
