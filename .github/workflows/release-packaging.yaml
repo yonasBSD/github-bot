@@ -1,0 +1,139 @@
+name: Release Packaging
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+env:
+  PROJECT_NAME_UNDERSCORE: test2
+
+jobs:
+  release:
+    name: Linux
+    runs-on: ubuntu-latest
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          egress-policy: block
+          allowed-endpoints: >
+            api.deps.dev:443
+            api.github.com:443
+            api.osv.dev:443
+            api.scorecard.dev:443
+            fulcio.sigstore.dev:443
+            github.com:443
+            uploads.github.com:443
+            oss-fuzz-build-logs.storage.googleapis.com:443
+            rekor.sigstore.dev:443
+            tuf-repo-cdn.sigstore.dev:443
+            www.bestpractices.dev:443
+            objects.githubusercontent.com:443
+            raw.githubusercontent.com:443
+            static.rust-lang.org:443
+            static.crates.io:443
+            index.crates.io:443
+            azure.archive.ubuntu.com:80
+            changelogs.ubuntu.com:443
+            esm.ubuntu.com:443
+            security.ubuntu.com:80
+            packages.microsoft.com:443
+
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Release Build
+        uses: yonasBSD/toolkit@9067fa17c79d97c3bad28da5ebba1d3c32ab3582 # v0.1.0
+        with:
+          run: |
+            cargo auditable build --release
+
+      - name: Set env
+        run: echo "NFPM_VERSION=$(curl -sL https://api.github.com/repos/goreleaser/nfpm/releases/latest | jq -r ".tag_name" | cut -d'v' -f2)" >> $GITHUB_ENV
+
+      - name: Create Packages
+        env:
+          VERSION: ${{ github.ref_name }}
+        run: |
+           wget https://github.com/goreleaser/nfpm/releases/download/v${NFPM_VERSION}/nfpm_${NFPM_VERSION}_amd64.deb
+           sudo dpkg -i nfpm_${NFPM_VERSION}_amd64.deb
+           rm nfpm_${NFPM_VERSION}_amd64.deb
+           sed -i -E "s/^version:.+$/version: $VERSION/g" nfpm.yaml
+           mkdir scripts
+           touch foo bar scripts/postremove.sh scripts/preremove.sh scripts/preinstall.sh scripts/postinstall.sh changelog.yaml foobar.conf
+           for pkg in deb apk archlinux rpm ipk; do
+              nfpm package -p $pkg
+           done
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # v6.0.0
+        id: artifact-upload-step
+        with:
+          name: ${{ env.PROJECT_NAME_UNDERSCORE }}
+          path: |
+            *.deb
+            *.apk
+            *.ipk
+            *.rpm
+            *.zst
+
+      - name: Create Release
+        uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
+        with:
+          files: |
+            *.deb
+            *.apk
+            *.ipk
+            *.rpm
+            *.zst
+
+    #- name: Output artifact ID
+    #  run:  echo 'Artifact ID is ${{ steps.artifact-upload-step.outputs.artifact-id }}'
+
+    #  - name: Create Release
+    #    env:
+    #      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    #      tag: ${{ github.ref_name }}
+    #       gh release create "$tag" \
+    #         --repo="$GITHUB_REPOSITORY" \
+    #         --title="${tag#v}" \
+    #         --generate-notes
+
+  macos:
+    name: Mac
+    runs-on: macos-latest
+    permissions:
+      contents: write
+      packages: write
+    needs: [release]
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: yonasBSD/toolkit@9067fa17c79d97c3bad28da5ebba1d3c32ab3582 # v0.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          run: |
+            cargo build --release
+            mv target/release/${{ env.PROJECT_NAME_UNDERSCORE }} ${{ env.PROJECT_NAME_UNDERSCORE }}-macos-64bit.dmg
+            gh release upload "${{ github.ref_name }}" ${{ env.PROJECT_NAME_UNDERSCORE }}-macos-64bit.dmg --clobber
+
+  windows:
+    name: Windows
+    runs-on: windows-latest
+    permissions:
+      contents: write
+      packages: write
+    needs: [release]
+    steps:
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: yonasBSD/toolkit@9067fa17c79d97c3bad28da5ebba1d3c32ab3582 # v0.1.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          run: |
+            cargo build --release
+            mv target/release/${{ env.PROJECT_NAME_UNDERSCORE }}.exe ${{ env.PROJECT_NAME_UNDERSCORE }}-windows-64bit.exe
+            gh release upload "${{ github.ref_name }}" ${{ env.PROJECT_NAME_UNDERSCORE }}-windows-64bit.exe --clobber
