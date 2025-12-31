@@ -106,6 +106,7 @@ allow = [
   "MPL-2.0",
   "Unicode-3.0",
   "BSD-3-Clause",
+  "OpenSSL",
   "Zlib",
   "ISC",
   "CDLA-Permissive-2.0",
