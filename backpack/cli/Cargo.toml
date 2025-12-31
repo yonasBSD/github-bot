@@ -8,8 +8,6 @@ github-bot-lib = { path = "../lib" }
 reqwest.workspace = true
 clap.workspace = true
 anyhow.workspace = true
-serde.workspace = true
-serde_json.workspace = true
 human-panic = "2.0.6"
 
 [[bin]]
