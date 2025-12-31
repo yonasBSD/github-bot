@@ -1,0 +1,97 @@
+name: Health
+
+on:
+  workflow_call:
+  pull_request:
+  push:
+    branches:
+      - main
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+
+  outdated:
+    name: Outdated Crates
+    runs-on: ubuntu-latest
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.deps.dev:443
+            api.github.com:443
+            api.osv.dev:443
+            api.scorecard.dev:443
+            fulcio.sigstore.dev:443
+            github.com:443
+            oss-fuzz-build-logs.storage.googleapis.com:443
+            rekor.sigstore.dev:443
+            tuf-repo-cdn.sigstore.dev:443
+            www.bestpractices.dev:443
+            github-releases.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            objects.githubusercontent.com:443
+            static.rust-lang.org:443
+            index.crates.io:443
+            static.crates.io:443
+
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
+
+      - uses: dtolnay/rust-toolchain@b3b07ba8b418998c39fb20f53e8b695cdcc8de1b # stable
+        with:
+          toolchain: nightly
+
+      - name: Install cargo-binstall
+        uses: cargo-bins/cargo-binstall@ea60fcf749c6a52a729e0eaabb5eb33391d44823 # v1.16.4
+
+      - name: Install cargo-outdated
+        run: cargo binstall -y cargo-outdated
+
+      - name: Run cargo-outdated
+        run: |
+          echo ### Outdated Dependencies >> $GITHUB_STEP_SUMMARY
+          cargo outdated >> $GITHUB_STEP_SUMMARY
+
+  deps:
+    name: Unused dependencies
+    runs-on: ubuntu-latest
+    env:
+      SCCACHE_GHA_ENABLED: "true"
+      RUSTC_WRAPPER: "sccache"
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        with:
+          disable-sudo: true
+          egress-policy: block
+          allowed-endpoints: >
+            api.deps.dev:443
+            api.github.com:443
+            api.osv.dev:443
+            api.scorecard.dev:443
+            fulcio.sigstore.dev:443
+            github.com:443
+            oss-fuzz-build-logs.storage.googleapis.com:443
+            rekor.sigstore.dev:443
+            tuf-repo-cdn.sigstore.dev:443
+            www.bestpractices.dev:443
+            github-releases.githubusercontent.com:443
+            release-assets.githubusercontent.com:443
+            objects.githubusercontent.com:443
+            static.rust-lang.org:443
+            index.crates.io:443
+            static.crates.io:443
+
+      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
+
+      - name: Check dependencies
+        uses: bnjbvr/cargo-machete@main
