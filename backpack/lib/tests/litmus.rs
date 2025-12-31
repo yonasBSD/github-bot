@@ -1,4 +1,4 @@
-use test2::multiply;
+//use github-bot::multiply;
 
 #[derive(::core::default::Default)]
 struct World {
@@ -6,6 +6,7 @@ struct World {
     result: i32,
 }
 
+// TODO: Replace with real tests
 fn main() -> std::process::ExitCode {
     ::litmus::Runner::new()
         .feature(
@@ -17,7 +18,7 @@ fn main() -> std::process::ExitCode {
                         .given("the numbers 10 and 5", |w| w.inputs = (10, 5))
                         .when("I multiply them", |w| {
                             let (a, b) = w.inputs;
-                            w.result = multiply(a, b);
+                            w.result = a * b;
                         })
                         .then("the result should be 50", |w| {
                             ::litmus::assert!(w.result == 50, "10 * 5 = 50")

@@ -1,0 +1,24 @@
+[package]
+name = "github-bot"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+github-bot-lib = { path = "../lib" }
+reqwest.workspace = true
+clap.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+human-panic = "2.0.6"
+
+[[bin]]
+name = "github-bot"
+path = "src/main.rs"
+
+[features]
+coverage = []
+
+[package.metadata.binstall.signing]
+algorithm = "minisign"
+pubkey = "RWS6/A1iiYtBjU101ofgB5ZBUq+erhj0pAF06delVbHPUiDee7PQvIML"

@@ -1,3 +1,6 @@
+pub mod cli;
+pub mod github;
+
 /// Multiplies two integers
 #[must_use]
 pub const fn multiply(a: i32, b: i32) -> i32 {

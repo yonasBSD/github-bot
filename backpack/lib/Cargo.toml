@@ -1,18 +1,14 @@
 [package]
-name = "test2"
+name = "github-bot-lib"
 version = "0.1.0"
 authors = ["test@example.com"]
 edition = "2024"
 license = "MIT"
-description = "Test"
+description = "Library for github-bot"
 repository = "https://github.com/yonasBSD/rust-ci-github-actions-workflow"
 readme = "README.md"
 keywords = ["template", "rust"]
 categories = ["template"]
-
-[[bin]]
-name = "test2"
-path = "src/main.rs"
 
 [[test]]
 name = "litmus"
@@ -23,6 +19,7 @@ harness = false # Required for Litmus' custom runner
 coverage = []
 
 [dev-dependencies]
+mockito = "1.7.1"
 wasm-bindgen-test = "0.3.56"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
@@ -36,3 +33,8 @@ wasm-bindgen-futures = "0.4"
 demonstrate = { git = "https://github.com/yonasBSD/demonstrate" }
 litmus = "0.5.5"
 pretty_assertions = "1.4.1"
+clap.workspace = true
+reqwest.workspace = true
+anyhow.workspace = true
+serde.workspace = true
+serde_json.workspace = true
