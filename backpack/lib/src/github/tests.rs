@@ -2,7 +2,7 @@
 mod tests {
     // FIX: Use the absolute path (crate::github::) to import all necessary
     // types and constants from src/github/mod.rs.
-    use crate::github::{DEPENDABOT_USER, GITHUB_API_BASE, MergeResponse, PullRequest, User};
+    use crate::github::{DEPENDABOT_USER, MergeResponse, PullRequest, User};
 
     // Import external traits and libraries
     use anyhow::{Context, Result};
@@ -14,8 +14,7 @@ mod tests {
     // NOTE: This line is correctly marked as unused and can be safely removed.
     // use reqwest::StatusCode;
 
-    const OWNER: &str = "test_owner";
-    const REPO: &str = "test_repo";
+    const REPO: &str = "test_owner/test_repo";
     const TOKEN: &str = "test_token";
 
     // --- Data Structure Tests ---
@@ -57,7 +56,7 @@ mod tests {
         );
 
         let mock = server
-            .mock("GET", format!("/repos/{}/{}/pulls", OWNER, REPO).as_str())
+            .mock("GET", format!("/repos/{}/pulls", REPO).as_str())
             .match_query("state=open&per_page=100")
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -67,10 +66,7 @@ mod tests {
         // 2. Call Function (Manually making the request to the mock URL)
         let client = Client::builder().build()?;
 
-        let url = format!(
-            "{}/repos/{}/{}/pulls?state=open&per_page=100",
-            mock_base, OWNER, REPO
-        );
+        let url = format!("{}/repos/{}/pulls?state=open&per_page=100", mock_base, REPO);
 
         let response = client
             .get(&url)
@@ -115,7 +111,7 @@ mod tests {
         let mock = server
             .mock(
                 "PUT",
-                format!("/repos/{}/{}/pulls/{}/merge", OWNER, REPO, pr_number).as_str(),
+                format!("/repos/{}/pulls/{}/merge", REPO, pr_number).as_str(),
             )
             .with_status(200)
             .with_header("content-type", "application/json")
@@ -135,10 +131,7 @@ mod tests {
         let mock_base = server.url();
 
         // Manually build the merge URL using the mock server's URL
-        let merge_url = format!(
-            "{}/repos/{}/{}/pulls/{}/merge",
-            mock_base, OWNER, REPO, pr.number
-        );
+        let merge_url = format!("{}/repos/{}/pulls/{}/merge", mock_base, REPO, pr.number);
         let merge_body_json = serde_json::json!({
             "commit_title": format!("Merge Dependabot PR #{} ({})", pr.number, pr.title),
             "commit_message": "Automated merge by Rust utility.",

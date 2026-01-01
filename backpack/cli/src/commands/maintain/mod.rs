@@ -1,12 +1,20 @@
-use anyhow::Result;
 use clap::Parser;
-
 use colored::Colorize;
+use rootcause::hooks::Hooks;
+use rootcause_backtrace::BacktraceCollector;
+use tracing::instrument;
 
 use github_bot_lib::cli::Args;
 use github_bot_lib::github;
 
-pub fn run(repo: &Vec<String>, action: &Option<String>) -> Result<()> {
+#[instrument(level = "debug", target = "errors::rootcause", name = "run")]
+pub fn run(repos: &Vec<String>, action: &Option<String>) -> anyhow::Result<()> {
+    // Capture backtraces for all errors
+    Hooks::new()
+        .report_creation_hook(BacktraceCollector::new_from_env())
+        .install()
+        .expect("failed to install hooks");
+
     let _cli = Args::parse();
 
     let Ok(client) = github::GitHubClient::new() else {
@@ -15,7 +23,7 @@ pub fn run(repo: &Vec<String>, action: &Option<String>) -> Result<()> {
 
     // Rerunning failed jobs is handled outside the main cleanup loop
     if *action == Some("rerun".to_string()) {
-        for repo in repo {
+        for repo in repos {
             github::rerun_failed_jobs(&client, repo);
         }
         return Ok(());
@@ -37,7 +45,7 @@ pub fn run(repo: &Vec<String>, action: &Option<String>) -> Result<()> {
         }
     }
 
-    for repo in repo {
+    for repo in repos {
         println!(
             "{}",
             format!("\n--- Starting maintenance for {repo} ---")

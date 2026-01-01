@@ -1,48 +1,62 @@
-use anyhow::{Context, Result};
 use clap::Parser;
 use reqwest::blocking::Client;
+use rootcause::hooks::Hooks;
+use rootcause::prelude::*;
+use rootcause_backtrace::BacktraceCollector;
+use tracing::instrument;
 
 use github_bot_lib::cli::Args;
 use github_bot_lib::github;
 
-pub fn run(owner: &String, repo: &String) -> Result<()> {
+#[instrument(level = "debug", target = "errors::rootcause", name = "run")]
+pub fn run(repos: &Vec<String>) -> anyhow::Result<()> {
+    // Capture backtraces for all errors
+    Hooks::new()
+        .report_creation_hook(BacktraceCollector::new_from_env())
+        .install()
+        .expect("failed to install hooks");
+
     // 1. Parse command-line arguments
     let cli = Args::parse();
-
-    println!("--- Dependabot PR Auto-Processor ---");
-    println!("Target: {owner}/{repo}");
 
     // 2. Determine the authentication token
     let token = match cli.token {
         Some(t) => t,
         None => std::env::var("GITHUB_TOKEN")
-            .context("Error: GitHub token not found. Please provide it via the --token argument or set the GITHUB_TOKEN environment variable.")?,
+            .context("Missing Token")
+            .attach("Please provide the token via --token or set the GITHUB_TOKEN environment variable.")
+            .map_err(|report| anyhow::anyhow!("{report}"))?, // Manually convert Report to anyhow::Error
     };
 
-    // 3. Initialize the blocking HTTP client
-    let client = Client::builder().build()?;
+    for repo in repos {
+        println!("--- Dependabot PR Auto-Processor ---");
+        println!("Target: {repo}");
 
-    // 4. List and filter Dependabot PRs
-    let dependabot_prs = github::list_dependabot_prs(&client, owner, repo, &token)?;
+        // 3. Initialize the blocking HTTP client
+        let client = Client::builder().build()?;
 
-    if dependabot_prs.is_empty() {
-        println!("\n✅ No open Dependabot PRs found. Exiting.");
-        return Ok(());
+        // 4. List and filter Dependabot PRs
+        let dependabot_prs = github::list_dependabot_prs(&client, repo, &token)?;
+
+        if dependabot_prs.is_empty() {
+            println!("\n✅ No open Dependabot PRs found. Exiting.");
+            return Ok(());
+        }
+
+        println!(
+            "\nFound {} open Dependabot PRs. Starting processing...",
+            dependabot_prs.len()
+        );
+
+        // 5. Process each PR
+        for pr in dependabot_prs {
+            println!("\nProcessing PR #{}: {}", pr.number, pr.title);
+            // We ignore the individual result of process_pr to ensure we try all PRs.
+            let _ = github::process_pr(&client, repo, &token, &pr);
+        }
+
+        println!("\n--- Processing Complete ---");
     }
-
-    println!(
-        "\nFound {} open Dependabot PRs. Starting processing...",
-        dependabot_prs.len()
-    );
-
-    // 5. Process each PR
-    for pr in dependabot_prs {
-        println!("\nProcessing PR #{}: {}", pr.number, pr.title);
-        // We ignore the individual result of process_pr to ensure we try all PRs.
-        let _ = github::process_pr(&client, owner, repo, &token, &pr);
-    }
-
-    println!("\n--- Processing Complete ---");
 
     Ok(())
 }
