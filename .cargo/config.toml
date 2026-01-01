@@ -16,7 +16,7 @@ format = "fmt --all"
 cl = "clippy --all-targets --all-features -- -Dwarnings"
 
 [build]
-rustflags = ["-Dwarnings", "-Dunsafe-code"]
+rustflags = ["-Dwarnings", "-Dunsafe-code", "--cfg", "tokio_unstable"]
 
 [target.wasm32-unknown-unknown]
 runner = "wasm-bindgen-test-runner"

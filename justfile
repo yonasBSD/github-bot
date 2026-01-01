@@ -60,13 +60,17 @@ lint-commit-msg file:
     return 1
   fi
 
-install:
+setup:
   lefthook install
   prek install
   prek auto-upgrade
   mise trust --quiet .mise.toml
   @[ -f ".mise.local.toml" ] && mise trust --quiet .mise.local.toml || return 0
   mise install
+
+install:
+  task build
+  mv target/release/github-bot ~/.local/bin/
 
 help:
   task help

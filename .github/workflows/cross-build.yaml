@@ -10,7 +10,7 @@ on:
     workflows: ["Test with Code Coverage"]
     branches: [main]
     types:
-      - completed
+      - completed    # zizmor: ignore[dangerous-triggers]
 
 jobs:
   test:

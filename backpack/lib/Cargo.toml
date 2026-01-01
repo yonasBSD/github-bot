@@ -41,3 +41,4 @@ serde_json.workspace = true
 colored = "3.0.0"
 url = "2.5.7"
 tempfile = "3.24.0"
+clap-verbosity-flag = { version = "3.0.4", features = ["tracing"] }
