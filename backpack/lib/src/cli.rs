@@ -9,6 +9,9 @@ pub struct Args {
     #[arg(short, long, global = true)]
     pub token: Option<String>,
 
+    #[command(flatten)]
+    pub verbosity: clap_verbosity_flag::Verbosity,
+
     #[command(subcommand)]
     pub command: Commands,
 }
@@ -33,12 +36,13 @@ pub enum Commands {
 
     /// Merge Dependabot PRs for a specific repository
     Merge {
-        /// GitHub repository owner (e.g., 'rust-lang')
-        #[arg(short, long)]
-        owner: String,
-
-        /// GitHub repository name (e.g., 'cargo')
-        #[arg(short, long)]
-        repo: String,
+        /// The GitHub repository (or repositories) to maintain (e.g., owner/repo).
+        #[arg(
+            short,
+            long,
+            value_delimiter = ' ',
+            default_value = "yonasBSD/github-rs"
+        )]
+        repo: Vec<String>,
     },
 }

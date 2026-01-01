@@ -253,7 +253,7 @@ tasks:
 
   audit:
     desc: Perform a security audit
-    deps: ['audit:secrets', 'audit:vulnerabilities', 'audit:code-quality', 'audit:code-coverage', 'audit:licenses']
+    deps: ['audit:secrets', 'audit:vulnerabilities', 'audit:code-quality', 'audit:code-coverage', 'audit:licenses', 'audit:project-health']
 
   audit:secrets:
     desc: Scan for secrets
@@ -317,6 +317,23 @@ tasks:
       - task: run:feluda
       - task: run:cargo-deny
       - task: run:cargo-license
+
+  audit:project-health:
+    desc: Overall health of this project
+    cmds:
+      - 'echo Missing docs :: website'
+      - 'echo Missing docs :: comments'
+      - 'echo Missing code :: tests'
+      - 'echo Missing code :: test coverage'
+      - 'echo Missing benchmarks :: tests'
+      - 'echo Missing benchmarks :: reports'
+      - 'echo Missing git :: license'
+      - 'echo Missing git :: readme'
+      - 'echo Missing security :: sbom'
+      - 'echo Missing security :: checksums'
+      - 'echo Missing security :: signatures :: minisign'
+      - 'echo Missing security :: signatures :: cosign'
+      - 'echo Missing security :: rust :: cargo-audible'
 
   run:feluda:
     desc: Run feluda

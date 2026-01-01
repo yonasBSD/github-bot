@@ -25,4 +25,4 @@ jobs:
       - name: Autofix
         uses: autofix-ci/action@635ffb0c9798bd160680f18fd73371e355b85f27
         with:
-          commit-message: fix: [autofix.ci] apply automated fixes
+          commit-message: "fix(autofix.ci): Apply automated fixes"

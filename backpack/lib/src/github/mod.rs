@@ -35,13 +35,8 @@ pub struct MergeResponse {
 // --- GitHub API Functions ---
 
 /// Lists all open PRs and filters them to only include those created by Dependabot.
-pub fn list_dependabot_prs(
-    client: &Client,
-    owner: &str,
-    repo: &str,
-    token: &str,
-) -> Result<Vec<PullRequest>> {
-    let url = format!("{GITHUB_API_BASE}/repos/{owner}/{repo}/pulls?state=open&per_page=100");
+pub fn list_dependabot_prs(client: &Client, repo: &str, token: &str) -> Result<Vec<PullRequest>> {
+    let url = format!("{GITHUB_API_BASE}/repos/{repo}/pulls?state=open&per_page=100");
 
     let response = client
         .get(&url)
@@ -73,16 +68,10 @@ pub fn list_dependabot_prs(
 }
 
 /// Core function to attempt merge, handle stale branch errors, and retry.
-pub fn process_pr(
-    client: &Client,
-    owner: &str,
-    repo: &str,
-    token: &str,
-    pr: &PullRequest,
-) -> Result<()> {
+pub fn process_pr(client: &Client, repo: &str, token: &str, pr: &PullRequest) -> Result<()> {
     for attempt in 1..=MAX_MERGE_ATTEMPTS {
         // 1. Attempt to merge the PR
-        let merge_response = attempt_merge(client, owner, repo, token, pr).context(format!(
+        let merge_response = attempt_merge(client, repo, token, pr).context(format!(
             "Failed to send merge request for PR #{}",
             pr.number
         ))?;
@@ -111,7 +100,7 @@ pub fn process_pr(
             }
 
             // Otherwise, attempt to update the branch and retry
-            if update_pr_branch(client, owner, repo, token, pr)? {
+            if update_pr_branch(client, repo, token, pr)? {
                 continue; // Continue to the next iteration (retry)
             }
             println!("  ⏭️ Branch update failed. Skipping PR (leaving open).");
@@ -128,14 +117,13 @@ pub fn process_pr(
 /// Performs the PUT request to merge the PR.
 pub fn attempt_merge(
     client: &Client,
-    owner: &str,
     repo: &str,
     token: &str,
     pr: &PullRequest,
 ) -> Result<Response> {
     let merge_url = format!(
-        "{}/repos/{}/{}/pulls/{}/merge",
-        GITHUB_API_BASE, owner, repo, pr.number
+        "{}/repos/{}/pulls/{}/merge",
+        GITHUB_API_BASE, repo, pr.number
     );
     let merge_body = serde_json::json!({
         "commit_title": format!("Merge Dependabot PR #{} ({})", pr.number, pr.title),
@@ -157,14 +145,13 @@ pub fn attempt_merge(
 /// Triggers a branch update (rebase/merge) on the PR's head branch from the base branch.
 pub fn update_pr_branch(
     client: &Client,
-    owner: &str,
     repo: &str,
     token: &str,
     pr: &PullRequest,
 ) -> Result<bool> {
     let update_url = format!(
-        "{}/repos/{}/{}/pulls/{}/update-branch",
-        GITHUB_API_BASE, owner, repo, pr.number
+        "{}/repos/{}/pulls/{}/update-branch",
+        GITHUB_API_BASE, repo, pr.number
     );
 
     let response = client
