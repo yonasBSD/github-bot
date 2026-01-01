@@ -38,3 +38,6 @@ reqwest.workspace = true
 anyhow.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+colored = "3.0.0"
+url = "2.5.7"
+tempfile = "3.24.0"
