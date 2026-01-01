@@ -8,7 +8,7 @@ use github_bot_lib::cli::Args;
 use github_bot_lib::github;
 
 #[instrument(level = "debug", target = "errors::rootcause", name = "run")]
-pub fn run(repos: &Vec<String>, action: &Option<String>) -> anyhow::Result<()> {
+pub fn run(repo: String, action: &Option<String>) -> anyhow::Result<()> {
     // Capture backtraces for all errors
     Hooks::new()
         .report_creation_hook(BacktraceCollector::new_from_env())
@@ -23,9 +23,7 @@ pub fn run(repos: &Vec<String>, action: &Option<String>) -> anyhow::Result<()> {
 
     // Rerunning failed jobs is handled outside the main cleanup loop
     if *action == Some("rerun".to_string()) {
-        for repo in repos {
-            github::rerun_failed_jobs(&client, repo);
-        }
+        github::rerun_failed_jobs(&client, &repo);
         return Ok(());
     }
 
@@ -45,35 +43,32 @@ pub fn run(repos: &Vec<String>, action: &Option<String>) -> anyhow::Result<()> {
         }
     }
 
-    for repo in repos {
-        println!(
-            "{}",
-            format!("\n--- Starting maintenance for {repo} ---")
-                .cyan()
-                .bold()
-        );
+    println!(
+        "{}",
+        format!("\n--- Starting maintenance for {repo} ---")
+            .cyan()
+            .bold()
+    );
 
-        // Cleanup Repo (Always executed unless 'rerun')
-        github::delete_failed_workflows(&client, repo);
-        github::delete_old_container_versions(&client, repo);
+    // Cleanup Repo (Always executed unless 'rerun')
+    github::delete_failed_workflows(&client, &repo);
+    github::delete_old_container_versions(&client, &repo);
 
-        println!("{}", "Deleted failed workflows.".green());
-        println!("{}", "Deleted old containers versions.".green());
-        println!();
+    println!("{}", "Deleted failed workflows.".green());
+    println!("{}", "Deleted old containers versions.".green());
+    println!();
 
-        // Create new release (only if 'release' action is specified)
-        if is_release_action {
-            // Delete all releases and tags first
-            if let Err(e) = github::delete_all_releases(&client, repo) {
-                eprintln!(
-                    "{}",
-                    format!("Failed to complete full release cleanup for {repo}: {e}").red()
-                );
-                continue;
-            }
-
+    // Create new release (only if 'release' action is specified)
+    if is_release_action {
+        // Delete all releases and tags first
+        if let Err(e) = github::delete_all_releases(&client, &repo) {
+            eprintln!(
+                "{}",
+                format!("Failed to complete full release cleanup for {repo}: {e}").red()
+            );
+        } else {
             // Then create the new release
-            github::create_release(&client, repo)?;
+            github::create_release(&client, &repo)?;
         }
     }
 
