@@ -293,6 +293,7 @@ impl GitHubClient {
     }
 
     /// Performs a simple blocking DELETE request.
+    /*
     fn delete(&self, path: &str) -> Result<(), reqwest::Error> {
         let url = self.api_base.join(path).unwrap();
 
@@ -314,6 +315,7 @@ impl GitHubClient {
             Err(response.error_for_status().unwrap_err())
         }
     }
+    */
 
     /// Performs a simple blocking POST request.
     fn post<T: Serialize, R: for<'de> Deserialize<'de>>(
