@@ -1,14 +1,14 @@
-use anyhow::{Context, Result};
+mod commands;
+
 use clap::Parser;
-use reqwest::blocking::Client;
+use commands::{maintain, merge};
+use github_bot_lib::cli::{Args, Commands};
+use std::env;
 
 #[cfg(not(target_arch = "wasm32"))]
 use human_panic::{metadata, setup_panic};
 
-use github_bot_lib::cli::Args;
-use github_bot_lib::github;
-
-fn main() -> Result<()> {
+fn main() {
     #[cfg(not(target_arch = "wasm32"))]
     setup_panic!(
         metadata!()
@@ -17,43 +17,15 @@ fn main() -> Result<()> {
             .support("- Open a support request by email to support@example.com")
     );
 
-    // 1. Parse command-line arguments
-    let args = Args::parse();
+    let cli = Args::parse();
 
-    println!("--- Dependabot PR Auto-Processor ---");
-    println!("Target: {}/{}", args.owner, args.repo);
+    match &cli.command {
+        Commands::Maintain { repo, action } => {
+            let _ = maintain::run(repo, action);
+        }
 
-    // 2. Determine the authentication token
-    let token = match args.token {
-        Some(t) => t,
-        None => std::env::var("GITHUB_TOKEN")
-            .context("Error: GitHub token not found. Please provide it via the --token argument or set the GITHUB_TOKEN environment variable.")?,
-    };
-
-    // 3. Initialize the blocking HTTP client
-    let client = Client::builder().build()?;
-
-    // 4. List and filter Dependabot PRs
-    let dependabot_prs = github::list_dependabot_prs(&client, &args.owner, &args.repo, &token)?;
-
-    if dependabot_prs.is_empty() {
-        println!("\n✅ No open Dependabot PRs found. Exiting.");
-        return Ok(());
+        Commands::Merge { owner, repo } => {
+            let _ = merge::run(owner, repo);
+        }
     }
-
-    println!(
-        "\nFound {} open Dependabot PRs. Starting processing...",
-        dependabot_prs.len()
-    );
-
-    // 5. Process each PR
-    for pr in dependabot_prs {
-        println!("\nProcessing PR #{}: {}", pr.number, pr.title);
-        // We ignore the individual result of process_pr to ensure we try all PRs.
-        let _ = github::process_pr(&client, &args.owner, &args.repo, &token, &pr);
-    }
-
-    println!("\n--- Processing Complete ---");
-
-    Ok(())
 }
