@@ -52,6 +52,8 @@ tasks:
   build:
     desc: Build
     deps: ['build:templates']
+    env:
+      RUSTFLAGS: "--cfg tokio_unstable"
     cmds:
       - cargo auditable build --release
       - defer: { task: cleanup }

@@ -1,18 +1,11 @@
 #[cfg(test)]
 mod tests {
-    // FIX: Use the absolute path (crate::github::) to import all necessary
-    // types and constants from src/github/mod.rs.
-    use crate::github::{DEPENDABOT_USER, MergeResponse, PullRequest, User};
-
-    // Import external traits and libraries
     use anyhow::{Context, Result};
     use mockito;
     use reqwest::blocking::Client;
-    // Import header constants directly from reqwest::header
     use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 
-    // NOTE: This line is correctly marked as unused and can be safely removed.
-    // use reqwest::StatusCode;
+    use crate::github::{DEPENDABOT_USER, MergeResponse, PullRequest, User};
 
     const REPO: &str = "test_owner/test_repo";
     const TOKEN: &str = "test_token";
