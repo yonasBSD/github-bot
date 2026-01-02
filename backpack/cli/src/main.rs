@@ -1,23 +1,20 @@
 mod commands;
 
 use clap::Parser;
-use commands::{maintain, merge};
-use github_bot_lib::cli::{Args, Commands};
-
+use commands::{hello, maintain, merge};
 use std::env;
 use terminal_banner::Banner;
-use tracing_subscriber::filter::LevelFilter;
-use tracing_subscriber::{
-    EnvFilter, Registry, filter::FilterExt, layer::SubscriberExt, prelude::*,
-};
+//use tracing_subscriber::filter::LevelFilter;
+use tracing_subscriber::{EnvFilter, Registry, layer::SubscriberExt, prelude::*};
+
+use github_bot_lib::cli::{Args, Commands};
+use github_bot_lib::plugins::{self, Event};
 
 #[cfg(not(target_arch = "wasm32"))]
 use human_panic::{metadata, setup_panic};
 
-fn main() -> anyhow::Result<()> {
-    const PROJECT_NAME: &str = env!("CARGO_PKG_NAME");
-    const PROJECT_DESC: &str = env!("CARGO_PKG_DESCRIPTION");
-
+#[tokio::main]
+async fn main() -> anyhow::Result<()> {
     #[cfg(not(target_arch = "wasm32"))]
     setup_panic!(
         metadata!()
@@ -26,8 +23,11 @@ fn main() -> anyhow::Result<()> {
             .support("- Open a support request by email to support@example.com")
     );
 
+    const PROJECT_NAME: &str = env!("CARGO_PKG_NAME");
+    const PROJECT_DESC: &str = env!("CARGO_PKG_DESCRIPTION");
+
     let cli = Args::parse();
-    let max_level_filter = LevelFilter::from(cli.verbosity);
+    //let max_level_filter = LevelFilter::from(cli.verbosity);
 
     // 1. Define the formatted output (The Layer)
     let telemetry_fmt = tracing_subscriber::fmt::layer()
@@ -45,12 +45,13 @@ fn main() -> anyhow::Result<()> {
     // 3. Combine the filters: Apply both the environment filter AND the max level filter.
     // Note: When chaining filters (env_filter.and(max_level_filter)), the filter that
     // allows an event to pass is the intersection of both.
-    let combined_filter = env_filter.and(max_level_filter);
+    //let combined_filter = env_filter.and(max_level_filter);
 
     // 4. Construct the registry, applying the format layer and the combined filter layer
     let registry = Registry::default()
         // Apply formatting layer, filtered by the combined filter
-        .with(telemetry_fmt.with_filter(combined_filter))
+        //.with(telemetry_fmt.with_filter(combined_filter))
+        .with(telemetry_fmt.with_filter(env_filter))
         // Send traces to tokio console
         .with(console_subscriber::spawn());
 
@@ -64,7 +65,7 @@ fn main() -> anyhow::Result<()> {
         && ["debug", "trace"].contains(&std::env::var("RUST_LOG").unwrap().to_lowercase().as_str())
     {
         let banner = Banner::new()
-            .text(format!("Welcome to {}!", PROJECT_NAME).into())
+            .text(format!("Welcome to {PROJECT_NAME}!").into())
             .text(PROJECT_DESC.into())
             .render();
 
@@ -79,12 +80,73 @@ fn main() -> anyhow::Result<()> {
         "Parsed command line arguments"
     );
 
+    // 2. Plugin Initialization Phase
+    plugins::broadcast_event(&[], Event::PluginRegistrationInit).await;
+    let plugins = plugins::discover_plugins()?;
+    for plugin in &plugins {
+        plugins::broadcast_event(
+            &plugins,
+            plugins::Event::PluginRegistered(plugin.manifest.name.clone()),
+        )
+        .await;
+    }
+    plugins::broadcast_event(&plugins, Event::PluginRegistrationEnd).await;
+    tracing::info!("\n--- Plugin Registration Complete ---\n");
+
     match &cli.command {
         Commands::Maintain { repo, action } => {
-            maintain::run(repo, action).map_err(anyhow::Error::from)?
+            // a. Init Event
+            plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
+
+            // b. Run Event
+            let run_event = Event::CliCommandExecutionRun {
+                command: String::from("maintain"),
+                args: vec![repo.clone(), action.clone().unwrap()],
+            };
+
+            plugins::broadcast_event(&plugins, run_event).await;
+
+            // Run command
+            let () = maintain::run(repo.clone(), action)?;
+
+            // c. End Event
+            plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
         }
-        Commands::Merge { repo } => merge::run(repo)?,
-    };
+        Commands::Merge { repo } => {
+            // a. Init Event
+            plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
+
+            // b. Run Event
+            let run_event = Event::CliCommandExecutionRun {
+                command: String::from("merge"),
+                args: vec![repo.clone()],
+            };
+
+            plugins::broadcast_event(&plugins, run_event).await;
+
+            let () = merge::run(repo.clone())?;
+
+            // c. End Event
+            plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
+        }
+        Commands::Hello {} => {
+            // a. Init Event
+            plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
+
+            // b. Run Event
+            let run_event = Event::CliCommandExecutionRun {
+                command: String::from("hello"),
+                args: vec![],
+            };
+
+            plugins::broadcast_event(&plugins, run_event).await;
+
+            let () = hello::run()?;
+
+            // c. End Event
+            plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
+        }
+    }
 
     Ok(())
 }

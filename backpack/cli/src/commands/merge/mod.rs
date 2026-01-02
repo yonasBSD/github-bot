@@ -9,7 +9,7 @@ use github_bot_lib::cli::Args;
 use github_bot_lib::github;
 
 #[instrument(level = "debug", target = "errors::rootcause", name = "run")]
-pub fn run(repos: &Vec<String>) -> anyhow::Result<()> {
+pub fn run(repo: String) -> anyhow::Result<()> {
     // Capture backtraces for all errors
     Hooks::new()
         .report_creation_hook(BacktraceCollector::new_from_env())
@@ -28,35 +28,33 @@ pub fn run(repos: &Vec<String>) -> anyhow::Result<()> {
             .map_err(|report| anyhow::anyhow!("{report}"))?, // Manually convert Report to anyhow::Error
     };
 
-    for repo in repos {
-        println!("--- Dependabot PR Auto-Processor ---");
-        println!("Target: {repo}");
+    println!("--- Dependabot PR Auto-Processor ---");
+    println!("Target: {repo}");
 
-        // 3. Initialize the blocking HTTP client
-        let client = Client::builder().build()?;
+    // 3. Initialize the blocking HTTP client
+    let client = Client::builder().build()?;
 
-        // 4. List and filter Dependabot PRs
-        let dependabot_prs = github::list_dependabot_prs(&client, repo, &token)?;
+    // 4. List and filter Dependabot PRs
+    let dependabot_prs = github::list_dependabot_prs(&client, &repo, &token)?;
 
-        if dependabot_prs.is_empty() {
-            println!("\n✅ No open Dependabot PRs found. Exiting.");
-            return Ok(());
-        }
-
-        println!(
-            "\nFound {} open Dependabot PRs. Starting processing...",
-            dependabot_prs.len()
-        );
-
-        // 5. Process each PR
-        for pr in dependabot_prs {
-            println!("\nProcessing PR #{}: {}", pr.number, pr.title);
-            // We ignore the individual result of process_pr to ensure we try all PRs.
-            let _ = github::process_pr(&client, repo, &token, &pr);
-        }
-
-        println!("\n--- Processing Complete ---");
+    if dependabot_prs.is_empty() {
+        println!("\n✅ No open Dependabot PRs found. Exiting.");
+        return Ok(());
     }
+
+    println!(
+        "\nFound {} open Dependabot PRs. Starting processing...",
+        dependabot_prs.len()
+    );
+
+    // 5. Process each PR
+    for pr in dependabot_prs {
+        println!("\nProcessing PR #{}: {}", pr.number, pr.title);
+        // We ignore the individual result of process_pr to ensure we try all PRs.
+        let _ = github::process_pr(&client, &repo, &token, &pr);
+    }
+
+    println!("\n--- Processing Complete ---");
 
     Ok(())
 }
