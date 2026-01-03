@@ -99,9 +99,10 @@ async fn main() -> anyhow::Result<()> {
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
 
             // b. Run Event
+            let action_arg = action.clone().unwrap_or_else(|| String::from("none"));
             let run_event = Event::CliCommandExecutionRun {
                 command: String::from("maintain"),
-                args: vec![repo.clone(), action.clone().unwrap()],
+                args: vec![repo.clone(), action_arg],
             };
 
             plugins::broadcast_event(&plugins, run_event).await;
