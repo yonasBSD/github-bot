@@ -70,7 +70,11 @@ setup:
 
 install:
   task build
+  rm -f ~/.local/bin/github-bot
   mv target/release/github-bot ~/.local/bin/
+
+ask *question:
+  copilot -p '{{question}}' --allow-all-tools
 
 help:
   task help

@@ -1,8 +1,16 @@
 # TODO
 
 ## Features
-- report on GitHub API status
-
+- github-bot.rs
+  - report on GitHub API status
+  - modify CLI arguments
+  - add CLI flags
+- bot.rs
+  - generic bot
+- script.rs
+  - zinit service init system
+- run.rs
+  - run framework
 
 ## Deployments
 
