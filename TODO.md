@@ -5,6 +5,9 @@
   - report on GitHub API status
   - modify CLI arguments
   - add CLI flags
+  - git-init
+  - gitignore
+  - try-rs
 - bot.rs
   - generic bot
 - script.rs
