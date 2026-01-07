@@ -1,7 +1,7 @@
 mod commands;
 
 use clap::Parser;
-use commands::{hello, maintain, merge};
+use commands::{hello, maintain, merge, wip};
 use std::env;
 use terminal_banner::Banner;
 //use tracing_subscriber::filter::LevelFilter;
@@ -126,6 +126,31 @@ async fn main() -> anyhow::Result<()> {
             plugins::broadcast_event(&plugins, run_event).await;
 
             let () = merge::run(repo.clone())?;
+
+            // c. End Event
+            plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
+        }
+        Commands::Wip {
+            no_push,
+            no_diff,
+            rewind,
+        } => {
+            // a. Init Event
+            plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
+
+            // b. Run Event
+            let run_event = Event::CliCommandExecutionRun {
+                command: String::from("wip"),
+                args: vec![
+                    no_push.to_string(),
+                    no_diff.to_string(),
+                    format!("{:#?}", rewind),
+                ],
+            };
+
+            plugins::broadcast_event(&plugins, run_event).await;
+
+            let _ = wip::run(*no_push, *no_diff, *rewind);
 
             // c. End Event
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;

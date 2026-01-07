@@ -36,6 +36,20 @@ pub enum Commands {
         repo: String,
     },
 
+    /// Work-in-progress commit helper. Push all uncommitted changes using the last commit.
+    Wip {
+        /// Do not push after amending
+        #[arg(long = "no-push")]
+        no_push: bool,
+
+        /// Do not show diff before committing
+        #[arg(long = "no-diff")]
+        no_diff: bool,
+
+        /// Optional number of commits to rewind (default: 1)
+        rewind: Option<u32>,
+    },
+
     /// Ping test
     Hello {},
 }
