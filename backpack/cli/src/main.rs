@@ -1,7 +1,7 @@
 mod commands;
 
 use clap::Parser;
-use commands::{hello, maintain, merge, wip};
+use commands::{git, hello, maintain, merge, wip};
 use std::env;
 use terminal_banner::Banner;
 //use tracing_subscriber::filter::LevelFilter;
@@ -75,7 +75,7 @@ async fn main() -> anyhow::Result<()> {
     // Parse the command-line arguments
     tracing::trace!(
         token = cli.token,
-        verbosity = ?cli.verbosity.log_level(),
+        verbosity = ?cli.verbosity.as_ref().and_then(|v| v.log_level()),
         command = ?cli.command,
         "Parsed command line arguments"
     );
@@ -151,6 +151,23 @@ async fn main() -> anyhow::Result<()> {
             plugins::broadcast_event(&plugins, run_event).await;
 
             let _ = wip::run(*no_push, *no_diff, *rewind);
+
+            // c. End Event
+            plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
+        }
+        Commands::Git { command } => {
+            // a. Init Event
+            plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
+
+            // b. Run Event
+            let run_event = Event::CliCommandExecutionRun {
+                command: String::from("git"),
+                args: vec![command.to_string()],
+            };
+
+            plugins::broadcast_event(&plugins, run_event).await;
+
+            let () = git::run()?;
 
             // c. End Event
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
