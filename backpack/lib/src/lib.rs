@@ -1,4 +1,5 @@
 pub mod cli;
+pub mod ghk;
 pub mod git;
 pub mod github;
 pub mod plugins;
