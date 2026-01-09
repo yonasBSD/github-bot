@@ -1,9 +1,9 @@
 use crate::cli::LicenseKind;
 use crate::ghk::{gh, git, util};
 use anyhow::{Result, bail};
+use chrono::Datelike;
 use dialoguer::Select;
 use std::fs;
-use chrono::Datelike;
 
 pub fn run(kind: Option<LicenseKind>) -> Result<()> {
     if !git::isrepo() {
@@ -54,7 +54,8 @@ pub fn run(kind: Option<LicenseKind>) -> Result<()> {
             AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER\n\
             LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n\
             OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n\
-            SOFTWARE.\n", year, author
+            SOFTWARE.\n",
+            year, author
         ),
         LicenseKind::Apache => format!(
             "Copyright {} {}\n\n\
@@ -66,7 +67,8 @@ pub fn run(kind: Option<LicenseKind>) -> Result<()> {
             distributed under the License is distributed on an \"AS IS\" BASIS,\n\
             WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.\n\
             See the License for the specific language governing permissions and\n\
-            limitations under the License.\n", year, author
+            limitations under the License.\n",
+            year, author
         ),
         LicenseKind::Gpl => format!(
             "Copyright (C) {} {}\n\n\
@@ -79,7 +81,8 @@ pub fn run(kind: Option<LicenseKind>) -> Result<()> {
             MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the\n\
             GNU General Public License for more details.\n\n\
             You should have received a copy of the GNU General Public License\n\
-            along with this program. If not, see <https://www.gnu.org/licenses/>.\n", year, author
+            along with this program. If not, see <https://www.gnu.org/licenses/>.\n",
+            year, author
         ),
         LicenseKind::Unlicense => String::from(
             "This is free and unencumbered software released into the public domain.\n\n\
@@ -89,7 +92,7 @@ pub fn run(kind: Option<LicenseKind>) -> Result<()> {
             In jurisdictions that recognize copyright laws, the author or authors\n\
             of this software dedicate any and all copyright interest in the\n\
             software to the public domain.\n\n\
-            THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND.\n"
+            THE SOFTWARE IS PROVIDED \"AS IS\", WITHOUT WARRANTY OF ANY KIND.\n",
         ),
     };
 

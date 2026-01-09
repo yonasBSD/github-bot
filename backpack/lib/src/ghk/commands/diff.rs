@@ -1,6 +1,6 @@
 use crate::ghk::{git, util};
 use anyhow::{Result, bail};
-use git2::{Repository, DiffOptions};
+use git2::{DiffOptions, Repository};
 
 pub fn run() -> Result<()> {
     if !git::isrepo() {
