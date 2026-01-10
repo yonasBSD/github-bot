@@ -15,10 +15,7 @@ pub fn run(key: Option<String>, value: Option<String>) -> Result<()> {
                 "  editor  = {}",
                 cfg.editor.as_deref().unwrap_or("(default)")
             ));
-            util::dim(&format!(
-                "  org  = {}",
-                cfg.org.as_deref().unwrap_or("")
-            ));
+            util::dim(&format!("  org  = {}", cfg.org.as_deref().unwrap_or("")));
             println!();
             util::dim(&format!("Config file: {}", Config::path().display()));
             println!();

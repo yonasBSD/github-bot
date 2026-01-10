@@ -1,4 +1,4 @@
-use crate::ghk::{gh, git, util, config::Config};
+use crate::ghk::{config::Config, gh, git, util};
 use anyhow::{Result, bail};
 use dialoguer::{Confirm, Input};
 
