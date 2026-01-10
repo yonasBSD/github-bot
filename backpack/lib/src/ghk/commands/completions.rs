@@ -6,6 +6,6 @@ use std::io;
 
 pub fn run(shell: Shell) -> Result<()> {
     let mut cmd = Args::command();
-    generate(shell, &mut cmd, "ghk", &mut io::stdout());
+    generate(shell, &mut cmd, "github-bot", &mut io::stdout());
     Ok(())
 }

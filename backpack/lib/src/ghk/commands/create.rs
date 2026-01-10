@@ -1,4 +1,4 @@
-use crate::ghk::{gh, git, util};
+use crate::ghk::{gh, git, util, config::Config};
 use anyhow::{Result, bail};
 use dialoguer::{Confirm, Input};
 
@@ -31,10 +31,15 @@ pub fn run() -> Result<()> {
         .and_then(|p| p.file_name().map(|n| n.to_string_lossy().to_string()))
         .unwrap_or_else(|| "my-project".to_string());
 
-    let name: String = Input::new()
+    let mut name: String = Input::new()
         .with_prompt("Repository name")
         .default(defaultname)
         .interact_text()?;
+
+    let cfg = Config::load();
+    if let Some(org) = cfg.org.as_deref() {
+        name = format!("{org}/{name}");
+    }
 
     let private = Confirm::new()
         .with_prompt("Make it private?")

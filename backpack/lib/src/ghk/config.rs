@@ -9,6 +9,7 @@ pub struct Config {
     pub quiet: bool,
     pub nocolor: bool,
     pub editor: Option<String>,
+    pub org: Option<String>,
 }
 
 impl Config {
@@ -46,6 +47,7 @@ impl Config {
             "quiet" => Some(self.quiet.to_string()),
             "nocolor" => Some(self.nocolor.to_string()),
             "editor" => self.editor.clone(),
+            "org" => self.org.clone(),
             "lastuser" => self.lastuser.clone(),
             _ => None,
         }
@@ -56,6 +58,7 @@ impl Config {
             "quiet" => self.quiet = value == "true" || value == "1",
             "nocolor" => self.nocolor = value == "true" || value == "1",
             "editor" => self.editor = Some(value.to_string()),
+            "org" => self.org = Some(value.to_string()),
             _ => anyhow::bail!("Unknown setting: {}", key),
         }
         self.save()
