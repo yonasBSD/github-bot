@@ -23,6 +23,9 @@ async fn main() -> anyhow::Result<()> {
             .support("- Open a support request by email to support@example.com")
     );
 
+    // Load .env, .env.$APP_ENV, and .env.local, respectively
+    env_rs::init()?;
+
     const PROJECT_NAME: &str = env!("CARGO_PKG_NAME");
     const PROJECT_DESC: &str = env!("CARGO_PKG_DESCRIPTION");
 
