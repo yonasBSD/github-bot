@@ -58,3 +58,5 @@ clap_complete = "4.5.65"
 strum = { version = "0.27.2", features = ["derive"] }
 git2 = { version = "0.20.3", features = ["vendored-libgit2", "vendored-openssl"] }
 chrono = "0.4.42"
+cliclack = "0.3.7"
+auth-git2 = "0.5.8"

@@ -27,6 +27,7 @@ Integrates [ghk](https://github.com/bymehul/ghk) with custom commands, and plugi
   - maintain :: Maintain one or more repositories (cleanup, rerun, or release)
   - merge :: Merge Dependabot PRs for a specific repository
   - wip :: Work-in-progress commit helper
+  - prune :: Prune local branches that don't exist remotely
 - [ghk](https://github.com/bymehul/ghk) integration
 
 | Command | Alias | Purpose | Runs... |
@@ -61,6 +62,7 @@ Commands:
   maintain  Maintain one or more repositories (cleanup, rerun, or release)
   merge     Merge Dependabot PRs for a specific repository
   wip       Work-in-progress commit helper. Push all uncommitted changes using the last commit
+  prune     Prune local branches that don't exist remotely
   git       Simple GitHub helper. Push code without the complexity
   hello     Ping test
   help      Print this message or the help of the given subcommand(s)

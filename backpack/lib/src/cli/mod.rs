@@ -63,6 +63,13 @@ pub enum Commands {
         rewind: Option<u32>,
     },
 
+    /// Prune local branches that don't exist remotely
+    Prune {
+        /// Answer yes to all confirmations
+        #[arg(short, long)]
+        yes: bool,
+    },
+
     /// Simple GitHub helper. Push code without the complexity.
     Git {
         #[command(subcommand)]
