@@ -50,7 +50,7 @@ pub fn run() -> Result<()> {
     if git::haschanges()? || !hasanycommits() {
         util::info("Creating initial save...");
         git::addall()?;
-        let _ = git::commit("Initial commit");
+        let _ = git::commit("chore: Initial commit.");
     }
 
     util::info("Creating repository on GitHub...");
