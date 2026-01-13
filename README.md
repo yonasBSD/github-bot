@@ -11,11 +11,11 @@
 
 A GitHub bot for your terminal.
 
-Integrates [ghk](https://github.com/bymehul/ghk) with custom commands, and plugins with built-in [Rhai scripting](https://github.com/rhaiscript/rhai).
+Integrates [ghk](https://github.com/bymehul/ghk) with custom commands, and plugins with built-in [script.rs scripting](https://github.com/yonasBSD/script.rs/tree/feat/stdlib).
 
 ## Features
 - plugin infrastructure
-  - built-in custom [Rhai scripting](https://github.com/yonasBSD/rhai/tree/feat/stdlib)
+  - built-in custom [Rhai scripting](https://github.com/yonasBSD/script.rs/tree/feat/stdlib)
     - support for [ruviz scientific graph plotting](https://github.com/Ameyanagi/ruviz)
       - High-performance 2D plotting library for Rust combining matplotlib's ease-of-use with Makie's performance
     - file system access
