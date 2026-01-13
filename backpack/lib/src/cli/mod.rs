@@ -5,6 +5,8 @@ use strum::Display;
 /// Automate merging and maintenance of Dependabot PRs.
 #[derive(Parser, Debug)]
 #[command(author, version, about, long_about = None)]
+#[command(name = "github-bot")]
+#[command(about = "GitHub automation bot")]
 pub struct Args {
     /// Optional GitHub Personal Access Token (PAT) with 'repo' scope.
     /// If not provided, the program will look for the `GITHUB_TOKEN` environment variable.
