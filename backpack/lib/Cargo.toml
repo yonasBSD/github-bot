@@ -47,7 +47,7 @@ dirs = "6.0.0"
 toml = "0.9.11"
 tokio.workspace = true
 futures = "0.3.31"
-rhai = { git = "https://github.com/yonasBSD/rhai", branch = "feat/stdlib", features = ["serde"] }
+rhai = { git = "https://github.com/yonasBSD/script.rs", branch = "feat/stdlib", features = ["serde"] }
 rhai-http = { git = "https://github.com/yonasBSD/rhai-http", branch = "yonasBSD" }
 dialoguer = "0.12"
 which = "8.0"
