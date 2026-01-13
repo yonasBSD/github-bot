@@ -26,6 +26,7 @@ Integrates [ghk](https://github.com/bymehul/ghk) with custom commands, and plugi
 - custom commands
   - maintain :: Maintain one or more repositories (cleanup, rerun, or release)
   - merge :: Merge Dependabot PRs for a specific repository
+  - wip :: Work-in-progress commit helper
 - [ghk](https://github.com/bymehul/ghk) integration
 
 | Command | Alias | Purpose | Runs... |
@@ -52,21 +53,24 @@ Integrates [ghk](https://github.com/bymehul/ghk) with custom commands, and plugi
 ## Help
 
 ```console
-GitHub helper bot
+GitHub automation bot
 
 Usage: github-bot [OPTIONS] <COMMAND>
 
 Commands:
   maintain  Maintain one or more repositories (cleanup, rerun, or release)
   merge     Merge Dependabot PRs for a specific repository
-  git       Git helper commands
+  wip       Work-in-progress commit helper. Push all uncommitted changes using the last commit
+  git       Simple GitHub helper. Push code without the complexity
   hello     Ping test
   help      Print this message or the help of the given subcommand(s)
 
 Options:
   -t, --token <TOKEN>  Optional GitHub Personal Access Token (PAT) with 'repo' scope. If not provided, the program will look for the `GITHUB_TOKEN` environment variable
+  -q, --quiet          Suppress output (errors still shown)
   -v, --verbose...     Increase logging verbosity
   -q, --quiet...       Decrease logging verbosity
+      --nocolor        Disable colored output
   -h, --help           Print help
   -V, --version        Print version
 ```
