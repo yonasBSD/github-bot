@@ -189,7 +189,7 @@ jobs:
         uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
 
       - name: OpenBSD
-        uses: vmactions/openbsd-vm@630e93012542112ecc789e90dc1532543370ae74 # v1.2.7
+        uses: vmactions/openbsd-vm@18acbd5ede9e22b6454dd9b8380ce550c4f12da9 # v1.2.7
         with:
           usesh: true
           sync: rsync
