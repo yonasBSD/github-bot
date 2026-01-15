@@ -103,7 +103,7 @@ pub enum LogFormat {
 }
 
 /// A span that tracks when it was entered so we can compute
-/// how long the task took when outro() is called.
+/// how long the task took when outro() / done() is called.
 struct TimedSpan {
     /// The active tracing span (dropped to exit)
     entered: EnteredSpan,
@@ -162,6 +162,9 @@ pub trait FormatLogger {
 
     /// Format an outro message (end of a task)
     fn outro_raw(&self, m: &str) -> String;
+
+    /// Format a done message (end of a task)
+    fn done_raw(&self, m: &str) -> String;
 
     /// Format a step/progress message
     fn step_raw(&self, m: &str) -> String;
@@ -233,6 +236,15 @@ pub trait FormatLogger {
             None
         } else {
             Some(self.outro_raw(m))
+        }
+    }
+
+    /// Done message (suppressed in quiet mode)
+    fn done(&self, m: &str) -> Option<String> {
+        if self.is_quiet() {
+            None
+        } else {
+            Some(self.done_raw(m))
         }
     }
 
@@ -323,6 +335,11 @@ impl FormatLogger for SimpleLogger {
         format!("✓ {}", m)
     }
 
+    fn done_raw(&self, m: &str) -> String {
+        // End of a task
+        format!("✓ Done!", m)
+    }
+
     fn step_raw(&self, m: &str) -> String {
         // Progress indicator
         if config::isnocolor() {
@@ -378,6 +395,9 @@ pub trait ScreenLogger {
     /// Print an outro message (end of a task)
     fn outro(&self, m: &str);
 
+    /// Print a done message (end of a task)
+    fn done(&self, m: &str);
+
     /// Print a step/progress message
     fn step(&self, m: &str);
 
@@ -392,7 +412,7 @@ pub trait ScreenLogger {
 /// also emits structured tracing spans.
 ///
 /// This logger supports:
-///   - Nested task spans via intro() / outro()
+///   - Nested task spans via intro() / outro() / done()
 ///   - Nested step spans inside tasks
 ///   - Timing of task spans
 ///   - Cargo-style verbosity levels
@@ -482,6 +502,39 @@ impl<L: FormatLogger> ScreenLogger for Printer<L> {
                         let elapsed = start.elapsed();
 
                         // Emit outro message with timing
+                        info!("{s} (took {:?})", elapsed);
+                    }
+                }
+
+                // Normal mode
+                _ => println!("{s}"),
+            }
+        }
+    }
+
+    fn done(&self, m: &str) {
+        // Format done message (suppressed in Quiet mode)
+        if let Some(s) = self.inner.done(m) {
+            match (self.inner.verbosity(), self.format) {
+                // JSON mode: structured output
+                (_, LogFormat::Json) => {
+                    self.emit_json("info", &s);
+                }
+
+                // Verbose/Trace: close spans + timing
+                (Verbosity::Verbose | Verbosity::Trace, LogFormat::Text) => {
+                    // Close all step spans first (automatic cleanup)
+                    let mut steps = self.steps.borrow_mut();
+                    while let Some(step) = steps.pop() {
+                        drop(step);
+                    }
+
+                    // Close the task span
+                    if let Some(TimedSpan { entered, start }) = self.tasks.borrow_mut().pop() {
+                        drop(entered); // exiting the span
+                        let elapsed = start.elapsed();
+
+                        // Emit done message with timing
                         info!("{s} (took {:?})", elapsed);
                     }
                 }
@@ -687,6 +740,11 @@ impl FormatLogger for ModernLogger {
     }
 
     fn outro_raw(&self, m: &str) -> String {
+        // End of a task
+        format!("✔ {}", m)
+    }
+
+    fn done_raw(&self, m: &str) -> String {
         // End of a task
         format!("✔ {}", m)
     }
