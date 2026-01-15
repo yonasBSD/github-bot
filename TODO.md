@@ -2,6 +2,7 @@
 
 ## Features
 - github-bot.rs
+  - re-run failed workflow runs
   - report on GitHub API status
   - modify CLI arguments
   - add CLI flags
