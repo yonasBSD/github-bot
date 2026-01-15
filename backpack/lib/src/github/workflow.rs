@@ -83,7 +83,11 @@ async fn get_workflow_runs(
     Ok(runs.workflow_runs)
 }
 
-async fn rerun_workflow(client: &GitHubClient, repo: &str, run_id: u64) -> Result<(), Box<dyn Error>> {
+async fn rerun_workflow(
+    client: &GitHubClient,
+    repo: &str,
+    run_id: u64,
+) -> Result<(), Box<dyn Error>> {
     let url = format!(
         "https://api.github.com/repos/{}/actions/runs/{}/rerun-failed-jobs",
         repo, run_id
@@ -223,7 +227,9 @@ pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
                                 .send();
 
                             if let Err(e) = res {
-                                log().error(format!("Error deleting workflow run {id_copy}: {e}").red());
+                                log().error(
+                                    format!("Error deleting workflow run {id_copy}: {e}").red(),
+                                );
                             }
                         }));
                     }
