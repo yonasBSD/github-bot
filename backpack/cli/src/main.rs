@@ -5,12 +5,11 @@ use commands::{git, hello, maintain, merge, prune, wip};
 use std::env;
 
 use github_bot_lib::cli::{Args, Commands};
+use github_bot_lib::log::{self, LogFormat, Printer, ScreenLogger, SimpleLogger, Verbosity};
 use github_bot_lib::plugins::{self, Event};
-use github_bot_lib::log::{self, Printer, SimpleLogger, Verbosity, LogFormat, ScreenLogger};
 
 #[cfg(not(target_arch = "wasm32"))]
 use human_panic::{metadata, setup_panic};
-
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
@@ -74,9 +73,7 @@ async fn main() -> anyhow::Result<()> {
     const PROJECT_DESC: &str = env!("CARGO_PKG_DESCRIPTION");
 
     if std::env::var("RUST_LOG").is_ok()
-        && ["debug", "trace"].contains(
-            &std::env::var("RUST_LOG").unwrap().to_lowercase().as_str()
-        )
+        && ["debug", "trace"].contains(&std::env::var("RUST_LOG").unwrap().to_lowercase().as_str())
     {
         let banner = Banner::new()
             .text(format!("Welcome to {PROJECT_NAME}!").into())
@@ -169,7 +166,11 @@ async fn main() -> anyhow::Result<()> {
             logger.outro("Merge command complete");
         }
 
-        Commands::Wip { no_push, no_diff, rewind } => {
+        Commands::Wip {
+            no_push,
+            no_diff,
+            rewind,
+        } => {
             logger.intro("Running wip command");
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;

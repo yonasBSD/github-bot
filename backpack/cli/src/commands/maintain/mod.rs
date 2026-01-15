@@ -3,17 +3,11 @@ use colored::Colorize;
 use rootcause::hooks::Hooks;
 use rootcause_backtrace::BacktraceCollector;
 use tracing::instrument;
-use tracing_subscriber::{fmt, prelude::*, EnvFilter};
+use tracing_subscriber::{EnvFilter, fmt, prelude::*};
 
 use github_bot_lib::cli::Args;
 use github_bot_lib::github;
-use github_bot_lib::log::{
-    Printer,
-    SimpleLogger,
-    Verbosity,
-    LogFormat,
-    ScreenLogger,
-};
+use github_bot_lib::log::{LogFormat, Printer, ScreenLogger, SimpleLogger, Verbosity};
 
 #[instrument(level = "debug", target = "errors::rootcause", name = "run")]
 pub fn run(repo: String, action: &Option<String>) -> anyhow::Result<()> {

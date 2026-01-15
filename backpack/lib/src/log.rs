@@ -1,17 +1,10 @@
 // Logger utilities
 
 use crate::ghk::config;
-use std::{
-    sync::Arc,
-    time::Instant,
-    cell::RefCell,
-};
 use once_cell::sync::OnceCell;
-use tracing::{
-    span::EnteredSpan,
-    info, warn, error, debug, trace, span, Level
-};
+use std::{cell::RefCell, sync::Arc, time::Instant};
 use terminal_banner::Banner;
+use tracing::{Level, debug, error, info, span, span::EnteredSpan, trace, warn};
 
 /// A global, thread-safe screen logger.
 ///
@@ -91,10 +84,10 @@ pub fn init() {
 /// Trace   → full tracing, including trace-level logs
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Verbosity {
-    Quiet,      // -q
-    Normal,     // default
-    Verbose,    // -v
-    Trace,      // -vv
+    Quiet,   // -q
+    Normal,  // default
+    Verbose, // -v
+    Trace,   // -vv
 }
 
 /// Output format for the logger.
@@ -434,7 +427,6 @@ impl<L: FormatLogger> Printer<L> {
     }
 }
 
-
 impl<L: FormatLogger> ScreenLogger for Printer<L> {
     fn intro(&self, m: &str) {
         // Format intro message (suppressed in Quiet mode)
@@ -485,9 +477,7 @@ impl<L: FormatLogger> ScreenLogger for Printer<L> {
                     }
 
                     // Close the task span
-                    if let Some(TimedSpan { entered, start }) =
-                        self.tasks.borrow_mut().pop()
-                    {
+                    if let Some(TimedSpan { entered, start }) = self.tasks.borrow_mut().pop() {
                         drop(entered); // exiting the span
                         let elapsed = start.elapsed();
 
