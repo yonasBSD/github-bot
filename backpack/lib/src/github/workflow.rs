@@ -176,15 +176,12 @@ pub async fn rerun_workflows(client: &GitHubClient, commit: Option<String>, repo
         }
     }
 
-    log().outro("Done!");
+    log().done();
 }
 
 /// Deletes failed/cancelled workflows concurrently using standard threads (max 10 at a time).
 pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
-    println!(
-        "{}",
-        format!("Deleting failed workflows for {repo}").yellow()
-    );
+    log().intro(format!("Deleting failed workflows for {repo}"));
 
     let path = &format!("repos/{repo}/actions/runs");
     match client.fetch_paginated::<WorkflowRun>(path) {
@@ -226,10 +223,7 @@ pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
                                 .send();
 
                             if let Err(e) = res {
-                                eprintln!(
-                                    "{}",
-                                    format!("Error deleting workflow run {id_copy}: {e}").red()
-                                );
+                                log().error(format!("Error deleting workflow run {id_copy}: {e}").red());
                             }
                         }));
                     }
@@ -240,19 +234,16 @@ pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
                     }
                 }
 
-                println!(
-                    "{}",
-                    format!("{count} failed/cancelled workflows deleted.").blue()
-                );
+                log().ok(format!("{count} failed/cancelled workflows deleted."));
             } else {
-                println!("{}", "No failed/cancelled workflows found.".blue());
+                log().info("No failed/cancelled workflows found.");
             }
         }
         Err(e) => {
-            eprintln!("{}", format!("Error fetching workflow runs: {e}").red());
+            log().err(format!("Error fetching workflow runs: {e}"));
         }
     }
-    println!("{}", "Done.".yellow());
+    log().done();
 }
 
 /// Reruns failed workflow jobs.
