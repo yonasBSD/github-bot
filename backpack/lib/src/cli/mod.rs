@@ -1,6 +1,7 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use clap_complete::Shell;
 use strum::Display;
+use git2::Repository;
 
 /// Automate merging and maintenance of Dependabot PRs.
 #[derive(Parser, Debug)]
@@ -28,13 +29,46 @@ pub struct Args {
     pub command: Commands,
 }
 
+impl Args {
+    /// The "Smart Default" logic.
+    /// Priority: 1. CLI Argument, 2. Git Discovery, 3. Hardcoded Fallback
+    pub fn resolve_repo(provided: &Option<String>) -> String {
+        if let Some(repo) = provided {
+            return repo.clone();
+        }
+
+        if let Some(detected) = Self::detect_git_repo() {
+            return detected;
+        }
+
+        // Final fallback
+        "yonasBSD/github-rs".to_string()
+    }
+
+    fn detect_git_repo() -> Option<String> {
+        let repo = Repository::discover(std::env::current_dir().ok()?).ok()?;
+        let remote = repo.find_remote("origin").ok()?;
+        let url = remote.url()?;
+
+        if url.contains("github.com") {
+            let parts: Vec<&str> = url.trim_end_matches(".git").split(&['/', ':'][..]).collect();
+            if parts.len() >= 2 {
+                let repo_name = parts.last()?;
+                let owner = parts.get(parts.len() - 2)?;
+                return Some(format!("{}/{}", owner, repo_name));
+            }
+        }
+        None
+    }
+}
+
 #[derive(Subcommand, Debug, Display)]
 #[strum(serialize_all = "lowercase")]
 pub enum Commands {
     /// Maintain one or more repositories (cleanup, rerun, or release)
     Maintain {
-        /// The GitHub repository (or repositories) to maintain (e.g., owner/repo).
-        #[arg(short, long, default_value = "yonasBSD/github-rs")]
+        /// The GitHub repository (e.g., owner/repo). If omitted, detects from local git origin.
+        #[arg(short, long)]
         repo: String,
 
         /// Specific action to perform: 'rerun' failed jobs, 'release' (clean and create v0.1.0), or no action for cleanup.
@@ -44,8 +78,8 @@ pub enum Commands {
 
     /// Merge Dependabot PRs for a specific repository
     Merge {
-        /// The GitHub repository (or repositories) to maintain (e.g., owner/repo).
-        #[arg(short, long, default_value = "yonasBSD/github-rs")]
+        /// The GitHub repository (e.g., owner/repo). If omitted, detects from local git origin.
+        #[arg(short, long)]
         repo: String,
     },
 

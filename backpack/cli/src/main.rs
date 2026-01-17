@@ -128,17 +128,19 @@ async fn main() -> anyhow::Result<()> {
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
 
+            let target_repo = Args::resolve_repo(repo);
             let action_arg = action.clone().unwrap_or_else(|| String::from("none"));
+
             plugins::broadcast_event(
                 &plugins,
                 Event::CliCommandExecutionRun {
                     command: "maintain".into(),
-                    args: vec![repo.clone(), action_arg],
+                    args: vec![target_repo.clone(), action_arg],
                 },
             )
             .await;
 
-            maintain::run(repo.clone(), action)?;
+            maintain::run(target_repo.clone(), action)?;
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
 
@@ -150,16 +152,18 @@ async fn main() -> anyhow::Result<()> {
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
 
+            let target_repo = Args::resolve_repo(repo);
+
             plugins::broadcast_event(
                 &plugins,
                 Event::CliCommandExecutionRun {
                     command: "merge".into(),
-                    args: vec![repo.clone()],
+                    args: vec![target_repo.clone()],
                 },
             )
             .await;
 
-            merge::run(repo.clone())?;
+            merge::run(target_repo.clone())?;
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
 
