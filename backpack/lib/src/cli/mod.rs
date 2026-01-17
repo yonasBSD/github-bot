@@ -1,7 +1,7 @@
 use clap::{Parser, Subcommand, ValueEnum};
 use clap_complete::Shell;
-use strum::Display;
 use git2::Repository;
+use strum::Display;
 
 /// Automate merging and maintenance of Dependabot PRs.
 #[derive(Parser, Debug)]
@@ -51,7 +51,10 @@ impl Args {
         let url = remote.url()?;
 
         if url.contains("github.com") {
-            let parts: Vec<&str> = url.trim_end_matches(".git").split(&['/', ':'][..]).collect();
+            let parts: Vec<&str> = url
+                .trim_end_matches(".git")
+                .split(&['/', ':'][..])
+                .collect();
             if parts.len() >= 2 {
                 let repo_name = parts.last()?;
                 let owner = parts.get(parts.len() - 2)?;
