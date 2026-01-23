@@ -9,6 +9,7 @@
   - git-init
   - gitignore
   - try-rs
+  - clean build artifacts (https://github.com/tbillington/kondo)
 - bot.rs
   - generic bot
 - script.rs
