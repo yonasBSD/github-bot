@@ -51,16 +51,13 @@ pub fn run() -> anyhow::Result<()> {
                 || run.conclusion.as_deref() == Some("timed_out")
                 || run.conclusion.as_deref() == Some("cancelled")
         })
-    .collect();
+        .collect();
 
     if failed_runs.is_empty() {
         println!("No failed workflow runs found for this commit.");
         println!("\nAll workflows:");
         for run in &runs {
-            println!(
-                "  - {} ({}): {:?}",
-                run.name, run.status, run.conclusion
-            );
+            println!("  - {} ({}): {:?}", run.name, run.status, run.conclusion);
         }
         return Ok(());
     }

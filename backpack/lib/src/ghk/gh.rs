@@ -94,29 +94,24 @@ pub fn createrepo(name: &str, private: bool) -> Result<()> {
 
     let output = Command::new("gh")
         .args(&args)
-        .stdout(Stdio::piped())
-        .stderr(Stdio::piped())
         .output()
         .context("Failed to create repository")?;
 
     spinner.finish_and_clear();
 
     if !output.status.success() {
-        let err = String::from_utf8_lossy(&output.stderr);
-        if err.contains("already exists") {
-            bail!("Repository already exists with that name");
-        }
-        bail!(
-            "Failed to create repository - {}",
-            if err.contains("Name already exists") {
-                "name is taken"
-            } else {
-                "check your connection"
-            }
-        );
+        bail!("Failed to create repository");
     }
 
-    createruleset(name);
+    // Set branch rules
+    createruleset(name)?;
+
+    // Enable Dependency Graph / Alerts
+    enable_dep_graph(name)?;
+
+    // Enable Auto-fix PRs
+    enable_security_updates(name)?;
+
     Ok(())
 }
 
@@ -273,6 +268,72 @@ pub fn createruleset(name: &str) -> Result<()> {
             "gh api failed: {}",
             String::from_utf8_lossy(&output.stderr).trim()
         );
+    }
+
+    Ok(())
+}
+
+/// Enable Dependency Graph and Security Analysis
+pub fn enable_dep_graph(name: &str) -> Result<()> {
+    let (owner, repo) = name
+        .split_once('/')
+        .context("Repository name must be in the format 'owner/repo'")?;
+
+    // Enable Vulnerability Alerts (this ensures dependency graph is active)
+    // Documentation: https://docs.github.com/en/rest/vulnerability-alerts/vulnerability-alerts
+    let endpoint = format!("repos/{owner}/{repo}/vulnerability-alerts");
+
+    let output = Command::new("gh")
+        .args([
+            "api",
+            "-X",
+            "PUT",
+            &endpoint,
+            "-H",
+            "Accept: application/vnd.github+json",
+            "-H",
+            "X-GitHub-Api-Version: 2022-11-28",
+        ])
+        .output()
+        .context("Failed to enable dependency graph via gh api")?;
+
+    if !output.status.success() {
+        let err = String::from_utf8_lossy(&output.stderr);
+        // Note: Some repos (like public ones) might have this enabled by default
+        // We log the error but you might want to handle "already enabled" silently
+        bail!("Failed to enable dependency graph: {}", err.trim());
+    }
+
+    Ok(())
+}
+
+/// Enable Dependabot Security Updates
+pub fn enable_security_updates(name: &str) -> Result<()> {
+    let (owner, repo) = name
+        .split_once('/')
+        .context("Repository name must be in the format 'owner/repo'")?;
+
+    // Enable automated security fixes
+    // Documentation: https://docs.github.com/en/rest/vulnerability-alerts/automated-security-fixes
+    let endpoint = format!("repos/{owner}/{repo}/automated-security-fixes");
+
+    let output = Command::new("gh")
+        .args([
+            "api",
+            "-X",
+            "PUT",
+            &endpoint,
+            "-H",
+            "Accept: application/vnd.github+json",
+            "-H",
+            "X-GitHub-Api-Version: 2022-11-28",
+        ])
+        .output()
+        .context("Failed to enable Dependabot security updates")?;
+
+    if !output.status.success() {
+        let err = String::from_utf8_lossy(&output.stderr);
+        bail!("Failed to enable security updates: {}", err.trim());
     }
 
     Ok(())

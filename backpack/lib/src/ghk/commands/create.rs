@@ -57,6 +57,9 @@ pub fn run() -> Result<()> {
     gh::createrepo(&name, private)?;
 
     util::ok(&format!("Repository '{}' created!", name));
+    util::dim("Security features have been enabled:");
+    util::ok("  dependency graph");
+    util::ok("  security updates");
     util::dim("Run 'ghk push' to save your changes");
     Ok(())
 }

@@ -18,9 +18,7 @@ struct WorkflowRunsResponse {
 }
 
 fn get_latest_commit() -> Result<String, Box<dyn Error>> {
-    let output = Command::new("git")
-        .args(["rev-parse", "HEAD"])
-        .output()?;
+    let output = Command::new("git").args(["rev-parse", "HEAD"]).output()?;
 
     if !output.status.success() {
         return Err("Failed to get latest commit".into());
@@ -83,11 +81,7 @@ async fn get_workflow_runs(
     Ok(runs.workflow_runs)
 }
 
-async fn rerun_workflow(
-    token: &str,
-    repo: &str,
-    run_id: u64,
-) -> Result<(), Box<dyn Error>> {
+async fn rerun_workflow(token: &str, repo: &str, run_id: u64) -> Result<(), Box<dyn Error>> {
     let url = format!(
         "https://api.github.com/repos/{}/actions/runs/{}/rerun-failed-jobs",
         repo, run_id
