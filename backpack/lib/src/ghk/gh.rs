@@ -210,8 +210,8 @@ fn makespinner(msg: &str) -> ProgressBar {
 
 /// Create default ruleset
 pub fn createruleset(name: &str) -> Result<()> {
+    use anyhow::{Context, Result, bail};
     use std::process::Command;
-    use anyhow::{Result, Context, bail};
 
     let (owner, repo) = name
         .split_once('/')
@@ -248,11 +248,15 @@ pub fn createruleset(name: &str) -> Result<()> {
     let output = Command::new("gh")
         .args([
             "api",
-            "-X", "POST",
+            "-X",
+            "POST",
             &endpoint,
-            "--input", "-",
-            "-H", "Accept: application/vnd.github+json",
-            "-H", "X-GitHub-Api-Version: 2022-11-28",
+            "--input",
+            "-",
+            "-H",
+            "Accept: application/vnd.github+json",
+            "-H",
+            "X-GitHub-Api-Version: 2022-11-28",
         ])
         .stdin(std::process::Stdio::piped())
         .output()
