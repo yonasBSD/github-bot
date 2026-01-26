@@ -115,6 +115,8 @@ pub fn createrepo(name: &str, private: bool) -> Result<()> {
             }
         );
     }
+
+    createruleset(name);
     Ok(())
 }
 
@@ -204,4 +206,70 @@ fn makespinner(msg: &str) -> ProgressBar {
     pb.set_message(msg.to_string());
     pb.enable_steady_tick(Duration::from_millis(100));
     pb
+}
+
+/// Create default ruleset
+pub fn createruleset(name: &str) -> Result<()> {
+    use std::process::Command;
+    use anyhow::{Result, Context, bail};
+
+    let (owner, repo) = name
+        .split_once('/')
+        .expect("input must be in the form owner/repo");
+
+    let endpoint = format!("repos/{owner}/{repo}/rulesets");
+
+    let body = r#"
+{
+  "name": "default",
+  "target": "branch",
+  "enforcement": "active",
+  "conditions": {
+    "ref_name": {
+      "include": ["~DEFAULT_BRANCH"],
+      "exclude": []
+    }
+  },
+  "bypass_actors": [
+    {
+      "actor_type": "OrganizationAdmin",
+      "bypass_mode": "always"
+    }
+  ],
+  "rules": [
+    { "type": "required_signatures", "parameters": {} },
+    { "type": "pull_request" },
+    { "type": "non_fast_forward", "parameters": {} },
+    { "type": "deletion", "parameters": {} }
+  ]
+}
+"#;
+
+    let output = Command::new("gh")
+        .args([
+            "api",
+            "-X", "POST",
+            &endpoint,
+            "--input", "-",
+            "-H", "Accept: application/vnd.github+json",
+            "-H", "X-GitHub-Api-Version: 2022-11-28",
+        ])
+        .stdin(std::process::Stdio::piped())
+        .output()
+        .context("Failed to run gh api")?;
+
+    // Write JSON body into stdin AFTER spawning
+    if let Some(mut stdin) = output.stdin {
+        use std::io::Write;
+        stdin.write_all(body.as_bytes()).ok();
+    }
+
+    if !output.status.success() {
+        bail!(
+            "gh api failed: {}",
+            String::from_utf8_lossy(&output.stderr).trim()
+        );
+    }
+
+    Ok(())
 }
