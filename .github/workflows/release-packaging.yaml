@@ -17,7 +17,7 @@ jobs:
 
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
         with:
           egress-policy: block
           allowed-endpoints: >
@@ -66,26 +66,64 @@ jobs:
 
       - name: Set Project Metadata
         run: |
+          # Extract crate name dynamically to handle any repo name
           CRATE_NAME=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].name')
           echo "PROJECT_BIN=$CRATE_NAME" >> $GITHUB_ENV
           echo "PROJECT_NAME_UNDERSCORE=${CRATE_NAME//-/_}" >> $GITHUB_ENV
 
       # Build & Package
       - name: Build Reproducible Binary
-        uses: yonasBSD/toolkit@e3156a095eb4a759778ad8ef10dfd58dd00993e6 # v0.1.0
+        uses: yonasBSD/toolkit@e3156a095eb4a759778ad8ef10dfd58dd00993e6 # v1.0.0
         with:
           run: |
+            # Set source date for reproducible builds
             export SOURCE_DATE_EPOCH=$(git log -1 --pretty=%ct)
             export CARGO_INCREMENTAL=0
             cargo auditable build --release
 
+      - name: Prepare Packaging Environment
+        run: |
+          # Ensure packaging/scripts exists even if the repo doesn't use them
+          mkdir -p packaging/scripts
+          # Create empty shell scripts if they don't exist so NFPM doesn't throw a 'file not found' error
+          for s in preinstall.sh postinstall.sh preremove.sh postremove.sh; do
+            if [ ! -f "packaging/scripts/$s" ]; then
+              echo "#!/bin/sh" > "packaging/scripts/$s"
+              chmod +x "packaging/scripts/$s"
+            fi
+          done
+
+      # Get project details
+      - name: Set Project Metadata
+        run: |
+          # Extract metadata directly from Cargo.toml
+          METADATA=$(cargo metadata --no-deps --format-version 1)
+
+          CRATE_NAME=$(echo $METADATA | jq -r '.packages[0].name')
+          DESC=$(echo $METADATA | jq -r '.packages[0].description')
+          LICE=$(echo $METADATA | jq -r '.packages[0].license')
+          # Grabs the first author from the list
+          MAINT=$(echo $METADATA | jq -r '.packages[0].authors[0]')
+
+          echo "PROJECT_BIN=$CRATE_NAME" >> $GITHUB_ENV
+          echo "PROJECT_NAME_UNDERSCORE=${CRATE_NAME//-/_}" >> $GITHUB_ENV
+          echo "PROJECT_DESC=$DESC" >> $GITHUB_ENV
+          echo "PROJECT_LICENSE=$LICE" >> $GITHUB_ENV
+          echo "PROJECT_MAINTAINER=$MAINT" >> $GITHUB_ENV
+
+      # Generate all packages
       - name: Generate Packages (NFPM)
         env:
           VERSION: ${{ github.ref_name }}
+          MAINTAINER: ${{ env.PROJECT_MAINTAINER }}
+          DESCRIPTION: ${{ env.PROJECT_DESC }}
+          LICENSE: ${{ env.PROJECT_LICENSE }}
+          VENDOR: "yonasBSD"
+          HOMEPAGE: "${{ github.event.repository.html_url }}"
         run: |
-          # Use shell expansion to strip 'v' prefix if present
-          CLEAN_VER=${VERSION#v}
-          sed -i -E "s/^version:.+$/version: $CLEAN_VER/g" packaging/nfpm/nfpm.yaml
+          # Clean 'v' from tag (v1.0.0 -> 1.0.0)
+          export VERSION=${VERSION#v}
+
           for pkg in deb apk archlinux rpm ipk; do
             nfpm package --config packaging/nfpm/nfpm.yaml --packager $pkg
           done
@@ -93,18 +131,18 @@ jobs:
       # Security, Checksums, and Signatures
       - name: Generate SBOMs, Checksums, and Signatures
         run: |
-          # Generate checksums for all artifacts
+          # Generate BLAKE3 checksums for all artifacts
           b3sum *.deb *.apk *.ipk *.rpm *.zst > checksums-blake3.txt
 
-          # Generate SBOMs and Signatures in one loop to save time
+          # Loop through artifacts to generate SBOMs and Cosign signatures
           for f in *.deb *.apk *.ipk *.rpm *.zst; do
             syft "$f" -o spdx-json="sbom-$f.spdx.json"
             cosign sign-blob --yes --output-signature "$f.sig" "$f"
           done
 
-      # Attestations
+      # Attestations (GitHub Native Security)
       - name: Attest SBOMs
-        uses: actions/attest-sbom@7d9b9d6f3a2efd49c548db5f7b061f147d16bed8 # main
+        uses: actions/attest-sbom@4651f806c01d8637787e274ac3bdf724ef169f34 # v3.0.0
         with:
           sbom-path: 'sbom-*.spdx.json'
 
@@ -119,20 +157,6 @@ jobs:
             *.zst
 
       # Publication
-      - name: Upload Artifacts to Job
-        uses: actions/upload-artifact@b7c566a772e6b6bfb58ed0dc250532a479d7789f # main
-        with:
-          name: ${{ env.PROJECT_NAME_UNDERSCORE }}-dist
-          path: |
-            *.deb
-            *.apk
-            *.ipk
-            *.rpm
-            *.zst
-            *.sig
-            sbom-*.spdx.json
-            checksums-blake3.txt
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@a06a81a03ee405af7f2048a818ed3f03bbf83c7b # v2.5.0
         with:
