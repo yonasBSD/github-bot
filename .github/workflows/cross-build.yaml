@@ -86,9 +86,27 @@ jobs:
         run: cargo test --all-features
 
       # --- Logic for VMs (BSDs, Slackware) ---
-      - name: Run Tests (VM)
-        if: matrix.os.type == 'vm'
-        uses: ${{ matrix.os.action }}
+      - name: Run Tests (FreeBSD)
+        if: matrix.os.name == 'FreeBSD'
+        uses: vmactions/freebsd-vm@v1
+        with:
+          usesh: true
+          sync: rsync
+          prepare: ${{ matrix.os.prepare }}
+          run: cargo test --all-features
+
+      - name: Run Tests (OpenBSD)
+        if: matrix.os.name == 'OpenBSD'
+        uses: vmactions/openbsd-vm@v1
+        with:
+          usesh: true
+          sync: rsync
+          prepare: ${{ matrix.os.prepare }}
+          run: cargo test --all-features
+
+      - name: Run Tests (Slackware)
+        if: matrix.os.name == 'Slackware'
+        uses: vmactions/slackware-vm@v1
         with:
           usesh: true
           sync: rsync
