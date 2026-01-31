@@ -1,6 +1,6 @@
 mod app;
 mod commands;
-mod config;
+pub mod config;
 mod error;
 mod gh;
 mod git;

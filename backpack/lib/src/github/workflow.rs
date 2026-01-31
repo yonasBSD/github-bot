@@ -4,6 +4,10 @@ use std::error::Error;
 use std::process::Command;
 
 use crate::log::*;
+use colored::Colorize;
+use std::time::Duration;
+use crate::github::GitHubClient;
+use std::thread;
 
 #[derive(Debug, Deserialize)]
 pub struct WorkflowRun {
@@ -65,8 +69,8 @@ async fn get_workflow_runs(
         repo, commit
     );
 
-    let client = reqwest::Client::new();
-    let response = client
+    let http_client = reqwest::Client::new();
+    let response = http_client
         .get(&url)
         .header("Authorization", format!("Bearer {}", client.token))
         .header("User-Agent", "github-workflow-rerunner")
@@ -93,8 +97,8 @@ async fn rerun_workflow(
         repo, run_id
     );
 
-    let client = reqwest::Client::new();
-    let response = client
+    let http_client = reqwest::Client::new();
+    let response = http_client
         .post(&url)
         .header("Authorization", format!("Bearer {}", client.token))
         .header("User-Agent", "github-workflow-rerunner")
@@ -110,7 +114,7 @@ async fn rerun_workflow(
     Ok(())
 }
 
-pub async fn rerun_workflows(client: &GitHubClient, commit: Option<String>, repo: Option<String>) {
+pub async fn rerun_workflows(client: &GitHubClient, commit: Option<String>, repo: Option<String>) -> Result<(), Box<dyn Error>> {
     // Get commit SHA
     let commit = match commit {
         Some(c) => c,
@@ -175,17 +179,18 @@ pub async fn rerun_workflows(client: &GitHubClient, commit: Option<String>, repo
     for run in &failed_runs {
         print!("Re-running '{}'... ", run.name);
         match rerun_workflow(&client, &repo, run.id).await {
-            Ok(_) => log().success(),
-            Err(e) => log().fail(format!("Failed: {}", e)),
+            Ok(_) => log().success(""),
+            Err(e) => log().fail(&format!("Failed: {}", e)),
         }
     }
 
-    log().done();
+    log().done("Done");
+    Ok(())
 }
 
 /// Deletes failed/cancelled workflows concurrently using standard threads (max 10 at a time).
 pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
-    log().intro(format!("Deleting failed workflows for {repo}"));
+    log().intro(&format!("Deleting failed workflows for {repo}"));
 
     let path = &format!("repos/{repo}/actions/runs");
     match client.fetch_paginated::<WorkflowRun>(path) {
@@ -227,9 +232,7 @@ pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
                                 .send();
 
                             if let Err(e) = res {
-                                log().error(
-                                    format!("Error deleting workflow run {id_copy}: {e}").red(),
-                                );
+                                log().err(&format!("{}", format!("Error deleting workflow run {id_copy}: {e}").red()));
                             }
                         }));
                     }
@@ -240,17 +243,18 @@ pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
                     }
                 }
 
-                log().ok(format!("{count} failed/cancelled workflows deleted."));
+                log().ok(&format!("{count} failed/cancelled workflows deleted."));
             } else {
                 log().info("No failed/cancelled workflows found.");
             }
         }
         Err(e) => {
-            log().err(format!("Error fetching workflow runs: {e}"));
+            log().err(&format!("Error fetching workflow runs: {e}"));
         }
     }
-    log().done();
+    log().done("Done");
 }
+
 
 /// Reruns failed workflow jobs.
 pub fn rerun_failed_jobs(client: &GitHubClient, repo: &str) {

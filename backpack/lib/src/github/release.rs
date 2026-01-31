@@ -1,3 +1,10 @@
+use serde::{Deserialize, Serialize};
+use crate::github::GitHubClient;
+use std::thread;
+use std::process::{Command, Stdio};
+use tempfile;
+use colored::Colorize;
+
 #[derive(Debug, Deserialize)]
 pub struct Release {
     id: u64,

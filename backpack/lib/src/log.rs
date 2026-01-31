@@ -4,7 +4,10 @@ use crate::ghk::config;
 use once_cell::sync::OnceCell;
 use std::{cell::RefCell, sync::Arc, time::Instant};
 use terminal_banner::Banner;
-use tracing::{Level, debug, error, info, span, span::EnteredSpan, trace, warn};
+use tracing::{Level, debug, error, info, span, trace, warn};
+use tracing_subscriber::{EnvFilter, Registry};
+use tracing_subscriber::prelude::*;
+use console_subscriber;
 
 /// A global, thread-safe screen logger.
 ///
@@ -58,7 +61,9 @@ pub fn init() {
         // Send traces to tokio console
         .with(console_subscriber::spawn());
 
-    tracing::subscriber::set_global_default(registry)?;
+    if let Err(e) = tracing::subscriber::set_global_default(registry) {
+        eprintln!("Failed to set global default subscriber: {e}");
+    }
 
     tracing::debug!("Logging initialized!");
     tracing::trace!("Tracing initialized!");
@@ -68,8 +73,8 @@ pub fn init() {
         && ["debug", "trace"].contains(&std::env::var("RUST_LOG").unwrap().to_lowercase().as_str())
     {
         let banner = Banner::new()
-            .text(format!("Welcome to {PROJECT_NAME}!").into())
-            .text(PROJECT_DESC.into())
+            .text(format!("Welcome to {}!", env!("CARGO_PKG_NAME")).into())
+            .text(env!("CARGO_PKG_DESCRIPTION").into())
             .render();
 
         println!("{banner}");
@@ -105,9 +110,6 @@ pub enum LogFormat {
 /// A span that tracks when it was entered so we can compute
 /// how long the task took when outro() / done() is called.
 struct TimedSpan {
-    /// The active tracing span (dropped to exit)
-    entered: EnteredSpan,
-
     /// Timestamp when the span was entered
     start: Instant,
 }
@@ -284,6 +286,7 @@ pub trait FormatLogger {
 pub struct SimpleLogger;
 
 impl FormatLogger for SimpleLogger {
+    fn verbosity(&self) -> Verbosity { Verbosity::Normal }
     fn ok_raw(&self, m: &str) -> String {
         // Green checkmark (or ASCII fallback)
         if config::isnocolor() {
@@ -337,7 +340,7 @@ impl FormatLogger for SimpleLogger {
 
     fn done_raw(&self, m: &str) -> String {
         // End of a task
-        format!("✓ Done!", m)
+        format!("✓ Done! {}", m)
     }
 
     fn step_raw(&self, m: &str) -> String {
@@ -406,6 +409,13 @@ pub trait ScreenLogger {
 
     /// Verbose-only trace message
     fn trace(&self, m: &str);
+
+    // Backwards-compatible aliases
+    fn success(&self, m: &str) { self.ok(m); }
+    fn sucess(&self, m: &str) { self.ok(m); }
+    fn fail(&self, m: &str) { self.err(m); }
+    fn warning(&self, m: &str) { self.warn(m); }
+    fn error(&self, m: &str) { self.err(m); }
 }
 
 /// A screen logger that prints formatted messages and, in verbose/trace mode,
@@ -424,7 +434,7 @@ pub struct Printer<L: FormatLogger> {
     tasks: RefCell<Vec<TimedSpan>>,
 
     /// Stack of active step spans created by step()
-    steps: RefCell<Vec<EnteredSpan>>,
+    steps: RefCell<Vec<()>>,
 
     /// Output format: Text (default) or Json
     ///
@@ -459,13 +469,11 @@ impl<L: FormatLogger> ScreenLogger for Printer<L> {
 
                 // Verbose/Trace: create a tracing span + timing
                 (Verbosity::Verbose | Verbosity::Trace, LogFormat::Text) => {
-                    // Create a new tracing span for this task
-                    let sp = span!(Level::INFO, "task", message = %m);
+                    // Create a new tracing span for this task (no enter to keep lifetimes simple)
+                    let _sp = span!(Level::INFO, "task", message = %m);
 
-                    // Enter the span and push it onto the task stack
-                    let entered = sp.enter();
+                    // Push a timed marker
                     self.tasks.borrow_mut().push(TimedSpan {
-                        entered,
                         start: Instant::now(),
                     });
 
@@ -497,8 +505,7 @@ impl<L: FormatLogger> ScreenLogger for Printer<L> {
                     }
 
                     // Close the task span
-                    if let Some(TimedSpan { entered, start }) = self.tasks.borrow_mut().pop() {
-                        drop(entered); // exiting the span
+                    if let Some(TimedSpan { start }) = self.tasks.borrow_mut().pop() {
                         let elapsed = start.elapsed();
 
                         // Emit outro message with timing
@@ -530,8 +537,7 @@ impl<L: FormatLogger> ScreenLogger for Printer<L> {
                     }
 
                     // Close the task span
-                    if let Some(TimedSpan { entered, start }) = self.tasks.borrow_mut().pop() {
-                        drop(entered); // exiting the span
+                    if let Some(TimedSpan { start }) = self.tasks.borrow_mut().pop() {
                         let elapsed = start.elapsed();
 
                         // Emit done message with timing
@@ -556,17 +562,11 @@ impl<L: FormatLogger> ScreenLogger for Printer<L> {
 
                 // Verbose/Trace: nested spans
                 (Verbosity::Verbose | Verbosity::Trace, LogFormat::Text) => {
-                    // Automatically close previous step span if one exists
-                    if let Some(prev) = self.steps.borrow_mut().pop() {
-                        drop(prev);
-                    }
+                    // Automatically close previous step marker if one exists
+                    let _ = self.steps.borrow_mut().pop();
 
-                    // Create a new step span
-                    let sp = span!(Level::INFO, "step", message = %m);
-                    let entered = sp.enter();
-
-                    // Push onto step stack
-                    self.steps.borrow_mut().push(entered);
+                    // Push a simple step marker
+                    self.steps.borrow_mut().push(());
 
                     // Emit step message through tracing
                     info!("{s}");
@@ -709,6 +709,7 @@ impl<L: FormatLogger> Printer<L> {
 pub struct ModernLogger;
 
 impl FormatLogger for ModernLogger {
+    fn verbosity(&self) -> Verbosity { Verbosity::Normal }
     fn ok_raw(&self, m: &str) -> String {
         // Clean success checkmark
         format!("✔ {}", m)

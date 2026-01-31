@@ -1,4 +1,9 @@
-use super::GITHUB_API_BASE;
+use serde::Deserialize;
+use anyhow::{Result, Context};
+use reqwest::blocking::{Client, Response};
+use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
+use std::{thread, time::Duration};
+use crate::github::{DEPENDABOT_USER, GITHUB_API_BASE, MAX_MERGE_ATTEMPTS, UPDATE_WAIT_SECS, User};
 
 #[derive(Deserialize, Debug, PartialEq, Eq)]
 pub struct PullRequest {

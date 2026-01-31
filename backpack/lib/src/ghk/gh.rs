@@ -240,7 +240,7 @@ pub fn createruleset(name: &str) -> Result<()> {
 }
 "#;
 
-    let output = Command::new("gh")
+    let mut child = Command::new("gh")
         .args([
             "api",
             "-X",
@@ -254,14 +254,18 @@ pub fn createruleset(name: &str) -> Result<()> {
             "X-GitHub-Api-Version: 2022-11-28",
         ])
         .stdin(std::process::Stdio::piped())
-        .output()
+        .spawn()
         .context("Failed to run gh api")?;
 
     // Write JSON body into stdin AFTER spawning
-    if let Some(mut stdin) = output.stdin {
+    if let Some(mut stdin) = child.stdin.take() {
         use std::io::Write;
         stdin.write_all(body.as_bytes()).ok();
     }
+
+    let output = child
+        .wait_with_output()
+        .context("Failed to capture gh api output")?;
 
     if !output.status.success() {
         bail!(

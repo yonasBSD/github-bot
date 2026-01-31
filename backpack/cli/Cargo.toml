@@ -11,19 +11,19 @@ categories = ["template"]
 
 [dependencies]
 github-bot-lib = { path = "../lib" }
-reqwest.workspace = true
-clap.workspace = true
-anyhow.workspace = true
+reqwest = { workspace = true }
+clap = { workspace = true }
+anyhow = { workspace = true }
 human-panic = "2.0.6"
 colored = "3.0.0"
 dialoguer = "0.12.0"
-tracing.workspace = true
+tracing = { workspace = true }
 tracing-subscriber = { version = "0.3.22", features = ["env-filter", "json"] }
-terminal-banner = { version = "0.4.1", features = ["color"] }
+terminal-banner = { workspace = true }
 console-subscriber = "0.5.0"
 rootcause = "0.11.1"
 rootcause-backtrace = "0.11.1"
-tokio.workspace = true
+tokio = { workspace = true }
 env-rs = { git = "https://github.com/yonasBSD/env.rs", version = "0.1.0" }
 
 [[bin]]

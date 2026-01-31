@@ -89,6 +89,11 @@ pub fn isnocolor() -> bool {
     unsafe { NOCOLOR }
 }
 
+pub fn isverbose() -> bool {
+    // default: false; verbosity may be controlled elsewhere
+    false
+}
+
 /// Check if this is the first run
 pub fn isfirstrun() -> bool {
     !Config::path().exists()
