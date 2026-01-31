@@ -60,12 +60,13 @@ fn test_wip_with_changes_and_treefmt() {
     // but the function should continue.
 
     // Create an initial commit so 'HEAD~1' exists for the reset logic
-    let mut cmd = Command::new("git");
-    cmd.args(["add", "."])
+    Command::new("git")
+        .args(["add", "."])
         .current_dir(repo_path)
         .status()
         .unwrap();
-    cmd.args(["commit", "-m", "initial"])
+    Command::new("git")
+        .args(["commit", "-m", "initial"])
         .current_dir(repo_path)
         .status()
         .unwrap();
