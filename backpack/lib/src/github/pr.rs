@@ -1,9 +1,9 @@
-use serde::Deserialize;
-use anyhow::{Result, Context};
+use crate::github::{DEPENDABOT_USER, GITHUB_API_BASE, MAX_MERGE_ATTEMPTS, UPDATE_WAIT_SECS, User};
+use anyhow::{Context, Result};
 use reqwest::blocking::{Client, Response};
 use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
+use serde::Deserialize;
 use std::{thread, time::Duration};
-use crate::github::{DEPENDABOT_USER, GITHUB_API_BASE, MAX_MERGE_ATTEMPTS, UPDATE_WAIT_SECS, User};
 
 #[derive(Deserialize, Debug, PartialEq, Eq)]
 pub struct PullRequest {

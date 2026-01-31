@@ -7,6 +7,7 @@ use std::env;
 use github_bot_lib::cli::{Args, Commands};
 use github_bot_lib::log::{self, LogFormat, Printer, ScreenLogger, SimpleLogger, Verbosity};
 use github_bot_lib::plugins::{self, Event};
+use terminal_banner::Banner;
 
 #[cfg(not(target_arch = "wasm32"))]
 use human_panic::{metadata, setup_panic};
@@ -38,14 +39,14 @@ async fn main() -> anyhow::Result<()> {
     // Parse CLI arguments
     // ────────────────────────────────────────────────────────────────
     //
-    let mut verbosity = Verbosity::Normal;
+    let mut _verbosity = Verbosity::Normal;
     let mut format = LogFormat::Text;
 
     for arg in std::env::args().skip(1) {
         match arg.as_str() {
-            "-q" => verbosity = Verbosity::Quiet,
-            "-v" => verbosity = Verbosity::Verbose,
-            "-vv" => verbosity = Verbosity::Trace,
+            "-q" => _verbosity = Verbosity::Quiet,
+            "-v" => _verbosity = Verbosity::Verbose,
+            "-vv" => _verbosity = Verbosity::Trace,
             "--json" => format = LogFormat::Json,
             _ => {}
         }
@@ -57,7 +58,7 @@ async fn main() -> anyhow::Result<()> {
     // ────────────────────────────────────────────────────────────────
     //
     log::init();
-    let formatter = SimpleLogger::new(verbosity);
+    let formatter = SimpleLogger;
     let logger = Printer::new(formatter, format);
 
     logger.debug("Logger initialized");
@@ -128,7 +129,7 @@ async fn main() -> anyhow::Result<()> {
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
 
-            let target_repo = Args::resolve_repo(repo);
+            let target_repo = repo.clone();
             let action_arg = action.clone().unwrap_or_else(|| String::from("none"));
 
             plugins::broadcast_event(
@@ -152,7 +153,7 @@ async fn main() -> anyhow::Result<()> {
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
 
-            let target_repo = Args::resolve_repo(repo);
+            let target_repo = repo.clone();
 
             plugins::broadcast_event(
                 &plugins,

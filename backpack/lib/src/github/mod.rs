@@ -2,6 +2,10 @@ mod pr;
 mod release;
 mod workflow;
 
+pub use pr::*;
+pub use release::*;
+pub use workflow::*;
+
 use anyhow::{Context, Result};
 use reqwest::StatusCode;
 use reqwest::blocking::{Client, Response};

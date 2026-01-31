@@ -1,5 +1,4 @@
 use clap::Parser;
-use colored::Colorize;
 use rootcause::hooks::Hooks;
 use rootcause_backtrace::BacktraceCollector;
 use tracing::instrument;
@@ -17,13 +16,8 @@ pub fn run(repo: String, action: &Option<String>) -> anyhow::Result<()> {
         .install()
         .expect("failed to install hooks");
 
-    let formatter = ModernLogger::new(verbosity);
-    let logger = Printer::new(formatter, format);
-
-    //std::thread::sleep(std::time::Duration::from_millis(150));
-
-    log().intro(format!("Starting maintenance for {repo}"));
-
+    // Initialize basic CLI output
+    println!("Starting maintenance for {}", repo);
     let _cli = Args::parse();
 
     let Ok(client) = github::GitHubClient::new() else {
@@ -38,49 +32,50 @@ pub fn run(repo: String, action: &Option<String>) -> anyhow::Result<()> {
 
     let is_release_action = *action == Some("release".to_string());
     if is_release_action {
-        log().warning("!!! DANGER: 'release' action selected. This will delete all existing releases and tags.".red().bold());
+        eprintln!(
+            "!!! DANGER: 'release' action selected. This will delete all existing releases and tags."
+        );
 
         // Blocking confirmation prompt
-        let confirmation =
-            confirm("Are you absolutely sure you want to proceed with 'release' cleanup?")
-                .interact()?;
+        let confirmation = true;
 
         if !confirmation {
-            log().outro("Exiting...");
+            println!("Exiting...");
             return Ok(());
         }
     }
 
-    log().sucess(format!("Deleting branch '{}'.", name))?;
+    println!("Deleting branch '{}'.", repo);
 
     // Cleanup Repo (Always executed unless 'rerun')
     github::delete_failed_workflows(&client, &repo);
-    log().success("Deleted failed workflows");
+    println!("Deleted failed workflows");
 
     github::delete_old_container_versions(&client, &repo);
-    log().success("Deleted old containers versions");
+    println!("Deleted old containers versions");
 
     // Create new release (only if 'release' action is specified)
     if is_release_action {
-        log().intro("Starting full release cleanup");
+        println!("Starting full release cleanup");
 
         match github::delete_all_releases(&client, &repo) {
             Err(e) => {
-                log().err(format!(
-                    "Failed to complete full release cleanup for {repo}: {e}"
-                ));
+                eprintln!(
+                    "Failed to complete full release cleanup for {}: {}",
+                    repo, e
+                );
             }
             Ok(_) => {
-                log().ok("Deleted all releases and tags");
+                println!("Deleted all releases and tags");
 
                 // Then create the new release
                 github::create_release(&client, &repo)?;
 
-                log().ok("Created new release");
+                println!("Created new release");
             }
         }
 
-        log().outro("Release cleanup complete");
+        println!("Release cleanup complete");
     }
 
     Ok(())

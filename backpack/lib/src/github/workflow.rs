@@ -3,11 +3,11 @@ use serde::Deserialize;
 use std::error::Error;
 use std::process::Command;
 
+use crate::github::GitHubClient;
 use crate::log::*;
 use colored::Colorize;
-use std::time::Duration;
-use crate::github::GitHubClient;
 use std::thread;
+use std::time::Duration;
 
 #[derive(Debug, Deserialize)]
 pub struct WorkflowRun {
@@ -114,7 +114,11 @@ async fn rerun_workflow(
     Ok(())
 }
 
-pub async fn rerun_workflows(client: &GitHubClient, commit: Option<String>, repo: Option<String>) -> Result<(), Box<dyn Error>> {
+pub async fn rerun_workflows(
+    client: &GitHubClient,
+    commit: Option<String>,
+    repo: Option<String>,
+) -> Result<(), Box<dyn Error>> {
     // Get commit SHA
     let commit = match commit {
         Some(c) => c,
@@ -232,7 +236,10 @@ pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
                                 .send();
 
                             if let Err(e) = res {
-                                log().err(&format!("{}", format!("Error deleting workflow run {id_copy}: {e}").red()));
+                                log().err(&format!(
+                                    "{}",
+                                    format!("Error deleting workflow run {id_copy}: {e}").red()
+                                ));
                             }
                         }));
                     }
@@ -254,7 +261,6 @@ pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
     }
     log().done("Done");
 }
-
 
 /// Reruns failed workflow jobs.
 pub fn rerun_failed_jobs(client: &GitHubClient, repo: &str) {

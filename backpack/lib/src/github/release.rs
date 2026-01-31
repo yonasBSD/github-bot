@@ -1,9 +1,9 @@
-use serde::{Deserialize, Serialize};
 use crate::github::GitHubClient;
-use std::thread;
-use std::process::{Command, Stdio};
-use tempfile;
 use colored::Colorize;
+use serde::{Deserialize, Serialize};
+use std::process::{Command, Stdio};
+use std::thread;
+use tempfile;
 
 #[derive(Debug, Deserialize)]
 pub struct Release {

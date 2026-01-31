@@ -1,13 +1,14 @@
 // Logger utilities
+#![allow(dropping_copy_types)]
 
 use crate::ghk::config;
+use console_subscriber;
 use once_cell::sync::OnceCell;
 use std::{cell::RefCell, sync::Arc, time::Instant};
 use terminal_banner::Banner;
 use tracing::{Level, debug, error, info, span, trace, warn};
-use tracing_subscriber::{EnvFilter, Registry};
 use tracing_subscriber::prelude::*;
-use console_subscriber;
+use tracing_subscriber::{EnvFilter, Registry};
 
 /// A global, thread-safe screen logger.
 ///
@@ -286,7 +287,9 @@ pub trait FormatLogger {
 pub struct SimpleLogger;
 
 impl FormatLogger for SimpleLogger {
-    fn verbosity(&self) -> Verbosity { Verbosity::Normal }
+    fn verbosity(&self) -> Verbosity {
+        Verbosity::Normal
+    }
     fn ok_raw(&self, m: &str) -> String {
         // Green checkmark (or ASCII fallback)
         if config::isnocolor() {
@@ -411,11 +414,21 @@ pub trait ScreenLogger {
     fn trace(&self, m: &str);
 
     // Backwards-compatible aliases
-    fn success(&self, m: &str) { self.ok(m); }
-    fn sucess(&self, m: &str) { self.ok(m); }
-    fn fail(&self, m: &str) { self.err(m); }
-    fn warning(&self, m: &str) { self.warn(m); }
-    fn error(&self, m: &str) { self.err(m); }
+    fn success(&self, m: &str) {
+        self.ok(m);
+    }
+    fn sucess(&self, m: &str) {
+        self.ok(m);
+    }
+    fn fail(&self, m: &str) {
+        self.err(m);
+    }
+    fn warning(&self, m: &str) {
+        self.warn(m);
+    }
+    fn error(&self, m: &str) {
+        self.err(m);
+    }
 }
 
 /// A screen logger that prints formatted messages and, in verbose/trace mode,
@@ -709,7 +722,9 @@ impl<L: FormatLogger> Printer<L> {
 pub struct ModernLogger;
 
 impl FormatLogger for ModernLogger {
-    fn verbosity(&self) -> Verbosity { Verbosity::Normal }
+    fn verbosity(&self) -> Verbosity {
+        Verbosity::Normal
+    }
     fn ok_raw(&self, m: &str) -> String {
         // Clean success checkmark
         format!("✔ {}", m)
