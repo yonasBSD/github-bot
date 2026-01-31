@@ -3,9 +3,9 @@ mod release;
 mod workflow;
 
 use anyhow::{Context, Result};
+use reqwest::StatusCode;
 use reqwest::blocking::{Client, Response};
 use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
-use reqwest::StatusCode;
 use serde::{Deserialize, Serialize};
 use std::thread;
 use std::time::Duration;
