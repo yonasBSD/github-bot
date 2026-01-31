@@ -126,7 +126,7 @@ pub fn attempt_merge(
         GITHUB_API_BASE, repo, pr.number
     );
     let merge_body = serde_json::json!({
-        "commit_title": format!("Merge Dependabot PR #{} ({})", pr.number, pr.title),
+        "commit_title": format!("{} (#{})", pr.title, pr.number),
         "commit_message": "Automated merge by Rust utility.",
         "merge_method": "squash" // You can change this to "merge" or "rebase"
     });

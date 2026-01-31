@@ -126,7 +126,7 @@ mod tests {
         // Manually build the merge URL using the mock server's URL
         let merge_url = format!("{}/repos/{}/pulls/{}/merge", mock_base, REPO, pr.number);
         let merge_body_json = serde_json::json!({
-            "commit_title": format!("Merge Dependabot PR #{} ({})", pr.number, pr.title),
+            "commit_title": format!("{} (#{})", pr.title, pr.number),
             "commit_message": "Automated merge by Rust utility.",
             "merge_method": "squash"
         });
