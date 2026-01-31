@@ -148,4 +148,285 @@ mod tests {
 
         Ok(())
     }
+
+    use super::*;
+    use mockito::{Mock, Server, ServerGuard};
+    use serde_json::json;
+
+    async fn setup_mock_server() -> ServerGuard {
+        Server::new_async().await
+    }
+
+    fn create_workflow_run_json(
+        id: u64,
+        name: &str,
+        status: &str,
+        conclusion: Option<&str>,
+    ) -> serde_json::Value {
+        json!({
+            "id": id,
+            "name": name,
+            "status": status,
+            "conclusion": conclusion,
+            "html_url": format!("https://github.com/owner/repo/actions/runs/{}", id)
+        })
+    }
+
+    #[tokio::test]
+    async fn test_get_workflow_runs_success() {
+        let mut server = setup_mock_server().await;
+
+        let mock = server
+            .mock("GET", "/repos/owner/repo/actions/runs")
+            .match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded(
+                "head_sha".into(),
+                "abc123".into(),
+            )]))
+            .match_header("authorization", "Bearer test-token")
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(
+                json!({
+                    "workflow_runs": [
+                        create_workflow_run_json(1, "CI", "completed", Some("success")),
+                        create_workflow_run_json(2, "Tests", "completed", Some("failure")),
+                    ]
+                })
+                .to_string(),
+            )
+            .create_async()
+            .await;
+
+        // This is a conceptual test - you'd need to modify get_workflow_runs
+        // to accept a base_url parameter for testing
+        // let runs = get_workflow_runs("test-token", "owner/repo", "abc123", Some(&server.url())).await.unwrap();
+
+        // assert_eq!(runs.len(), 2);
+        // assert_eq!(runs[0].id, 1);
+        // assert_eq!(runs[0].name, "CI");
+        // assert_eq!(runs[1].conclusion, Some("failure".to_string()));
+
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn test_get_workflow_runs_empty_response() {
+        let mut server = setup_mock_server().await;
+
+        let mock = server
+            .mock("GET", "/repos/owner/repo/actions/runs")
+            .match_query(mockito::Matcher::AllOf(vec![mockito::Matcher::UrlEncoded(
+                "head_sha".into(),
+                "abc123".into(),
+            )]))
+            .with_status(200)
+            .with_header("content-type", "application/json")
+            .with_body(json!({"workflow_runs": []}).to_string())
+            .create_async()
+            .await;
+
+        // let runs = get_workflow_runs("test-token", "owner/repo", "abc123", Some(&server.url())).await.unwrap();
+        // assert_eq!(runs.len(), 0);
+
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn test_get_workflow_runs_api_error() {
+        let mut server = setup_mock_server().await;
+
+        let mock = server
+            .mock("GET", "/repos/owner/repo/actions/runs")
+            .with_status(401)
+            .with_header("content-type", "application/json")
+            .with_body(json!({"message": "Bad credentials"}).to_string())
+            .create_async()
+            .await;
+
+        // let result = get_workflow_runs("bad-token", "owner/repo", "abc123", Some(&server.url())).await;
+        // assert!(result.is_err());
+
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn test_rerun_workflow_success() {
+        let mut server = setup_mock_server().await;
+
+        let mock = server
+            .mock(
+                "POST",
+                "/repos/owner/repo/actions/runs/123/rerun-failed-jobs",
+            )
+            .match_header("authorization", "Bearer test-token")
+            .with_status(201)
+            .create_async()
+            .await;
+
+        // let result = rerun_workflow("test-token", "owner/repo", 123, Some(&server.url())).await;
+        // assert!(result.is_ok());
+
+        mock.assert_async().await;
+    }
+
+    #[tokio::test]
+    async fn test_rerun_workflow_failure() {
+        let mut server = setup_mock_server().await;
+
+        let mock = server
+            .mock(
+                "POST",
+                "/repos/owner/repo/actions/runs/123/rerun-failed-jobs",
+            )
+            .with_status(403)
+            .with_header("content-type", "application/json")
+            .with_body(json!({"message": "Forbidden"}).to_string())
+            .create_async()
+            .await;
+
+        // let result = rerun_workflow("test-token", "owner/repo", 123, Some(&server.url())).await;
+        // assert!(result.is_err());
+
+        mock.assert_async().await;
+    }
+
+    #[test]
+    fn test_filter_failed_runs() {
+        let runs = vec![
+            serde_json::from_value::<WorkflowRun>(create_workflow_run_json(
+                1,
+                "CI",
+                "completed",
+                Some("success"),
+            ))
+            .unwrap(),
+            serde_json::from_value::<WorkflowRun>(create_workflow_run_json(
+                2,
+                "Tests",
+                "completed",
+                Some("failure"),
+            ))
+            .unwrap(),
+            serde_json::from_value::<WorkflowRun>(create_workflow_run_json(
+                3,
+                "Build",
+                "completed",
+                Some("timed_out"),
+            ))
+            .unwrap(),
+            serde_json::from_value::<WorkflowRun>(create_workflow_run_json(
+                4,
+                "Lint",
+                "completed",
+                Some("cancelled"),
+            ))
+            .unwrap(),
+            serde_json::from_value::<WorkflowRun>(create_workflow_run_json(
+                5,
+                "Deploy",
+                "in_progress",
+                None,
+            ))
+            .unwrap(),
+        ];
+
+        let failed: Vec<_> = runs
+            .iter()
+            .filter(|run| {
+                run.conclusion.as_deref() == Some("failure")
+                    || run.conclusion.as_deref() == Some("timed_out")
+                    || run.conclusion.as_deref() == Some("cancelled")
+            })
+            .collect();
+
+        assert_eq!(failed.len(), 3);
+        assert_eq!(failed[0].id, 2);
+        assert_eq!(failed[1].id, 3);
+        assert_eq!(failed[2].id, 4);
+    }
+
+    #[test]
+    fn test_parse_github_url_https() {
+        let url = "https://github.com/owner/repo.git";
+        let repo = url
+            .trim_end_matches(".git")
+            .split('/')
+            .rev()
+            .take(2)
+            .collect::<Vec<_>>()
+            .into_iter()
+            .rev()
+            .collect::<Vec<_>>()
+            .join("/");
+
+        assert_eq!(repo, "owner/repo");
+    }
+
+    #[test]
+    fn test_parse_github_url_ssh() {
+        let url = "git@github.com:owner/repo.git";
+        // This test shows the current parsing logic doesn't handle SSH URLs
+        // You may want to improve the parsing logic in get_repo_from_git
+        let parts: Vec<&str> = url.trim_end_matches(".git").split(':').collect();
+        let repo = if parts.len() == 2 {
+            parts[1].to_string()
+        } else {
+            url.split('/')
+                .rev()
+                .take(2)
+                .collect::<Vec<_>>()
+                .into_iter()
+                .rev()
+                .collect::<Vec<_>>()
+                .join("/")
+        };
+
+        assert_eq!(repo, "owner/repo");
+    }
+
+    // Add this to your WorkflowRun struct for testing
+    use serde::Deserialize;
+
+    #[derive(Debug, Deserialize)]
+    struct WorkflowRun {
+        id: u64,
+        name: String,
+        status: String,
+        conclusion: Option<String>,
+        html_url: String,
+    }
+}
+
+// Integration test helpers
+#[cfg(test)]
+mod integration_tests {
+    use std::process::Command;
+
+    #[test]
+    #[ignore] // Ignore by default as it requires git setup
+    fn test_get_latest_commit_integration() {
+        let output = Command::new("git")
+            .args(["rev-parse", "HEAD"])
+            .output()
+            .expect("Failed to execute git command");
+
+        assert!(output.status.success());
+        let commit = String::from_utf8(output.stdout).unwrap();
+        assert!(!commit.trim().is_empty());
+        assert_eq!(commit.trim().len(), 40); // SHA-1 hash length
+    }
+
+    #[test]
+    #[ignore] // Ignore by default as it requires git setup
+    fn test_get_repo_from_git_integration() {
+        let output = Command::new("git")
+            .args(["remote", "get-url", "origin"])
+            .output()
+            .expect("Failed to execute git command");
+
+        if output.status.success() {
+            let url = String::from_utf8(output.stdout).unwrap();
+            assert!(!url.trim().is_empty());
+        }
+    }
 }

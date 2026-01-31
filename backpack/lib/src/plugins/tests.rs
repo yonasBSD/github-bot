@@ -183,9 +183,9 @@ mod tests {
         // Only two plugins should be loaded successfully
         assert_eq!(plugins.len(), 2);
 
-        // The sorting logic in discover_plugins() ensures they are sorted by name: a-first-plugin, b-second-plugin
-        assert_eq!(plugins[0].manifest.name, "b-second-plugin");
-        assert_eq!(plugins[1].manifest.name, "a-first-plugin");
+        // Plugins sorted alphabetically by name: a-first-plugin, b-second-plugin
+        assert_eq!(plugins[0].manifest.name, "a-first-plugin");
+        assert_eq!(plugins[1].manifest.name, "b-second-plugin");
     }
 
     // --- Plugin::run_script Tests ---
