@@ -77,10 +77,11 @@ pub fn run() -> Result<()> {
     if !foundscary.is_empty() {
         util::warn("Wait! Potential sensitive or temporary files detected:");
         for file in foundscary.iter().take(5) {
-            util::dim(&format!("  {}", file));
+            util::dim(&format!("  {file}"));
         }
         if foundscary.len() > 5 {
-            util::dim(&format!("  ... and {} more", foundscary.len() - 5));
+            let more = foundscary.len() - 5;
+            util::dim(&format!("  ... and {more} more"));
         }
 
         if !std::path::Path::new(".gitignore").exists() {
@@ -103,10 +104,11 @@ pub fn run() -> Result<()> {
     // Show what will be saved
     util::info("Changes to save:");
     for file in files.iter().take(10) {
-        util::dim(&format!("  {}", file));
+        util::dim(&format!("  {file}"));
     }
     if files.len() > 10 {
-        util::dim(&format!("  ... and {} more", files.len() - 10));
+        let more = files.len() - 10;
+        util::dim(&format!("  ... and {more} more"));
     }
 
     // Get commit message

@@ -2,7 +2,6 @@
 #![allow(dropping_copy_types)]
 
 use crate::ghk::config;
-use console_subscriber;
 use once_cell::sync::OnceCell;
 use std::{cell::RefCell, sync::Arc, time::Instant};
 use terminal_banner::Banner;
@@ -58,9 +57,9 @@ pub fn init() {
     let registry = Registry::default()
         // Apply formatting layer, filtered by the combined filter
         //.with(telemetry_fmt.with_filter(combined_filter))
-        .with(telemetry_fmt.with_filter(env_filter))
+        .with(telemetry_fmt.with_filter(env_filter));
         // Send traces to tokio console
-        .with(console_subscriber::spawn());
+        //.with(console_subscriber::spawn());
 
     if let Err(e) = tracing::subscriber::set_global_default(registry) {
         eprintln!("Failed to set global default subscriber: {e}");

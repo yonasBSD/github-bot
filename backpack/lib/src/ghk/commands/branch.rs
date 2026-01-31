@@ -11,12 +11,12 @@ pub fn run(name: Option<String>) -> Result<()> {
     match name {
         // Switch to branch
         Some(branch) => {
-            util::info(&format!("Switching to {}...", branch));
+            util::info(&format!("Switching to {branch}..."));
 
             let status = Command::new("git").args(["checkout", &branch]).status()?;
 
             if status.success() {
-                util::ok(&format!("Now on {}", branch));
+                util::ok(&format!("Now on {branch}"));
             } else {
                 // Maybe it's a new branch?
                 util::info("Branch not found, creating it...");
@@ -25,7 +25,7 @@ pub fn run(name: Option<String>) -> Result<()> {
                     .status()?;
 
                 if status.success() {
-                    util::ok(&format!("Created and switched to {}", branch));
+                    util::ok(&format!("Created and switched to {branch}"));
                 } else {
                     util::err("Could not switch branch");
                 }
@@ -46,7 +46,7 @@ pub fn run(name: Option<String>) -> Result<()> {
                 if name == current {
                     println!("  \x1b[32m▶ {}\x1b[0m (current)", name);
                 } else {
-                    util::dim(&format!("  {}", name));
+                    util::dim(&format!("  {name}"));
                 }
             }
             println!();

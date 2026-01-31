@@ -84,7 +84,7 @@ pub fn wip(no_push: bool, no_diff: bool, rewind: Option<u32>) -> anyhow::Result<
 
     // Determine rewind count
     let rewind = rewind.unwrap_or(1);
-    let head_arg = format!("HEAD~{}", rewind);
+    let head_arg = format!("HEAD~{rewind}");
 
     // Soft reset and amend
     ensure_success(
@@ -148,7 +148,7 @@ fn delete_stale_local_branches(confirm: bool) -> anyhow::Result<()> {
         // Logic: If there is no 'refs/remotes/origin/<name>', the remote is gone.
         // We check this directly instead of relying on the 'upstream' config,
         // which can be buggy if the remote was deleted via a Web UI.
-        let remote_ref_path = format!("refs/remotes/{}/{}", remote_name, branch_name);
+        let remote_ref_path = format!("refs/remotes/{remote_name}/{branch_name}");
 
         if repo.find_reference(&remote_ref_path).is_err() {
             // Check if this branch ever even tried to track the remote.

@@ -6,9 +6,9 @@ pub fn ok(m: &str) {
         return;
     }
     if config::isnocolor() {
-        println!("+ {}", m);
+        println!("+ {m}");
     } else {
-        println!("\x1b[32m✔\x1b[0m {}", m);
+        println!("\x1b[32m✔\x1b[0m {m}");
     }
 }
 
@@ -18,18 +18,18 @@ pub fn warn(m: &str) {
         return;
     }
     if config::isnocolor() {
-        println!("! {}", m);
+        println!("! {m}");
     } else {
-        println!("\x1b[33m⚠\x1b[0m {}", m);
+        println!("\x1b[33m⚠\x1b[0m {m}");
     }
 }
 
 /// Print error message with red X (always shown)
 pub fn err(m: &str) {
     if config::isnocolor() {
-        eprintln!("X {}", m);
+        eprintln!("X {m}");
     } else {
-        eprintln!("\x1b[31m✗\x1b[0m {}", m);
+        eprintln!("\x1b[31m✗\x1b[0m {m}");
     }
 }
 
@@ -38,7 +38,7 @@ pub fn info(m: &str) {
     if config::isquiet() {
         return;
     }
-    println!("  {}", m);
+    println!("  {m}");
 }
 
 /// Print a dim/muted message
@@ -47,8 +47,8 @@ pub fn dim(m: &str) {
         return;
     }
     if config::isnocolor() {
-        println!("  {}", m);
+        println!("  {m}");
     } else {
-        println!("\x1b[90m  {}\x1b[0m", m);
+        println!("\x1b[90m  {m}\x1b[0m");
     }
 }

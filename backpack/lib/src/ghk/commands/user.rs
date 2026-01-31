@@ -21,9 +21,9 @@ pub fn run(cmd: UserCmd) -> Result<()> {
                 return Ok(());
             }
 
-            util::info(&format!("Switching to {}...", name));
+            util::info(&format!("Switching to {name}..."));
             gh::switchuser(&name)?;
-            util::ok(&format!("Now using {}", name));
+            util::ok(&format!("Now using {name}"));
         }
     }
     Ok(())

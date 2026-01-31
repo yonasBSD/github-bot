@@ -13,6 +13,7 @@ pub struct Config {
 }
 
 impl Config {
+    #[must_use]
     pub fn path() -> PathBuf {
         dirs::config_dir()
             .unwrap_or_else(|| PathBuf::from("."))
@@ -20,6 +21,7 @@ impl Config {
             .join("config.toml")
     }
 
+    #[must_use]
     pub fn load() -> Self {
         let path = Self::path();
         if path.exists() {
@@ -42,6 +44,7 @@ impl Config {
         Ok(())
     }
 
+    #[must_use]
     pub fn get(&self, key: &str) -> Option<String> {
         match key {
             "quiet" => Some(self.quiet.to_string()),
@@ -59,7 +62,7 @@ impl Config {
             "nocolor" => self.nocolor = value == "true" || value == "1",
             "editor" => self.editor = Some(value.to_string()),
             "org" => self.org = Some(value.to_string()),
-            _ => anyhow::bail!("Unknown setting: {}", key),
+            _ => anyhow::bail!("Unknown setting: {key}"),
         }
         self.save()
     }
@@ -75,6 +78,7 @@ pub fn setquiet(q: bool) {
     }
 }
 
+#[must_use]
 pub fn isquiet() -> bool {
     unsafe { QUIET }
 }
@@ -85,16 +89,19 @@ pub fn setnocolor(c: bool) {
     }
 }
 
+#[must_use]
 pub fn isnocolor() -> bool {
     unsafe { NOCOLOR }
 }
 
-pub fn isverbose() -> bool {
+#[must_use]
+pub const fn isverbose() -> bool {
     // default: false; verbosity may be controlled elsewhere
     false
 }
 
 /// Check if this is the first run
+#[must_use]
 pub fn isfirstrun() -> bool {
     !Config::path().exists()
 }

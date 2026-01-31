@@ -14,7 +14,7 @@ pub fn run() -> Result<()> {
     if which("git").is_ok() {
         util::ok("Git installed");
         if let Some(v) = git::version() {
-            util::dim(&format!("  {}", v));
+            util::dim(&format!("  {v}"));
         }
     } else {
         util::warn("Git not found");
@@ -25,7 +25,7 @@ pub fn run() -> Result<()> {
     if which("gh").is_ok() {
         util::ok("GitHub CLI installed");
         if let Some(v) = gh::version() {
-            util::dim(&format!("  {}", v));
+            util::dim(&format!("  {v}"));
         }
     } else {
         util::warn("GitHub CLI not found");
@@ -82,7 +82,7 @@ pub fn run() -> Result<()> {
 
 fn installtool(tool: &str) -> Result<()> {
     if !Confirm::new()
-        .with_prompt(&format!("Install {} now?", tool))
+        .with_prompt(&format!("Install {tool} now?"))
         .default(true)
         .interact()?
     {
@@ -105,7 +105,7 @@ fn installtool(tool: &str) -> Result<()> {
             runpkg("winget", &["install", "--id", id, "-e"])
         }
         _ => {
-            util::warn(&format!("Please install {} manually", tool));
+            util::warn(&format!("Please install {tool} manually"));
             Ok(())
         }
     }
@@ -122,9 +122,9 @@ fn installonlinux(tool: &str) -> Result<()> {
         _ => {
             util::warn("Could not detect package manager");
             util::dim("Please install manually:");
-            util::dim(&format!("  sudo apt install {}", tool));
-            util::dim(&format!("  sudo dnf install {}", tool));
-            util::dim(&format!("  sudo pacman -S {}", tool));
+            util::dim(&format!("  sudo apt install {tool}"));
+            util::dim(&format!("  sudo dnf install {tool}"));
+            util::dim(&format!("  sudo pacman -S {tool}"));
             Ok(())
         }
     }
@@ -167,7 +167,8 @@ fn runsudo(args: &[&str]) -> Result<()> {
 
     match status {
         Ok(s) if s.success() => {
-            util::ok(&format!("{} installed", args.last().unwrap_or(&"")));
+            let last = args.last().unwrap_or(&"");
+            util::ok(&format!("{last} installed"));
             Ok(())
         }
         Ok(_) => {
@@ -175,7 +176,7 @@ fn runsudo(args: &[&str]) -> Result<()> {
             Ok(())
         }
         Err(e) => {
-            util::warn(&format!("Could not run command: {}", e));
+            util::warn(&format!("Could not run command: {e}"));
             Ok(())
         }
     }
@@ -183,7 +184,7 @@ fn runsudo(args: &[&str]) -> Result<()> {
 
 fn runpkg(cmd: &str, args: &[&str]) -> Result<()> {
     if which(cmd).is_err() {
-        util::warn(&format!("{} not found", cmd));
+        util::warn(&format!("{cmd} not found"));
         match cmd {
             "brew" => util::dim("Install Homebrew from https://brew.sh"),
             "winget" => util::dim("winget should be pre-installed on Windows 10+"),
@@ -204,7 +205,7 @@ fn runpkg(cmd: &str, args: &[&str]) -> Result<()> {
             Ok(())
         }
         Err(e) => {
-            util::warn(&format!("Error: {}", e));
+            util::warn(&format!("Error: {e}"));
             Ok(())
         }
     }

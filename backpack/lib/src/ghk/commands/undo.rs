@@ -16,7 +16,7 @@ pub fn run() -> Result<()> {
     }
 
     util::info("Last commit:");
-    util::dim(&format!("  {}", history[0]));
+    util::dim(&format!("  {0}", history[0]));
 
     if !Confirm::new()
         .with_prompt("Undo this commit? (changes will be kept)")

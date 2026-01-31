@@ -9,13 +9,13 @@ pub fn run(key: Option<String>, value: Option<String>) -> Result<()> {
         (None, None) => {
             println!();
             util::info("Current settings:");
-            util::dim(&format!("  quiet   = {}", cfg.quiet));
-            util::dim(&format!("  nocolor = {}", cfg.nocolor));
+            util::dim(&format!("  quiet   = {quiet}", quiet = cfg.quiet));
+            util::dim(&format!("  nocolor = {nocolor}", nocolor = cfg.nocolor));
             util::dim(&format!(
-                "  editor  = {}",
-                cfg.editor.as_deref().unwrap_or("(default)")
+                "  editor  = {editor}",
+                editor = cfg.editor.as_deref().unwrap_or("(default)")
             ));
-            util::dim(&format!("  org  = {}", cfg.org.as_deref().unwrap_or("")));
+            util::dim(&format!("  org  = {org}", org = cfg.org.as_deref().unwrap_or("")));
             println!();
             util::dim(&format!("Config file: {}", Config::path().display()));
             println!();
@@ -23,12 +23,12 @@ pub fn run(key: Option<String>, value: Option<String>) -> Result<()> {
         // Show one setting
         (Some(k), None) => match cfg.get(&k) {
             Some(v) => println!("{}", v),
-            None => util::warn(&format!("Unknown setting: {}", k)),
+            None => util::warn(&format!("Unknown setting: {k}")),
         },
         // Set a value
         (Some(k), Some(v)) => {
             cfg.set(&k, &v)?;
-            util::ok(&format!("{} = {}", k, v));
+            util::ok(&format!("{k} = {v}"));
         }
         _ => {}
     }

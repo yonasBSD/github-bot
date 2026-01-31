@@ -75,7 +75,7 @@ pub fn switchuser(name: &str) -> Result<()> {
         .context("Failed to switch user")?;
 
     if !status.success() {
-        println!("Account '{}' not found locally. Please log in:", name);
+        println!("Account '{name}' not found locally. Please log in:");
         return login();
     }
     Ok(())
@@ -191,6 +191,7 @@ pub fn isonline() -> bool {
 }
 
 /// Create a spinner
+#[allow(clippy::literal_string_with_formatting_args)]
 fn makespinner(msg: &str) -> ProgressBar {
     let pb = ProgressBar::new_spinner();
     pb.set_style(

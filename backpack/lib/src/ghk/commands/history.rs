@@ -19,11 +19,12 @@ pub fn run(count: Option<usize>) -> Result<()> {
     println!();
     util::info("Recent saves:");
     for commit in &commits {
-        util::dim(&format!("  {}", commit));
+        util::dim(&format!("  {commit}"));
     }
 
     if commits.len() == n {
-        util::dim(&format!("  ... use 'ghk history {}' to see more", n * 2));
+        let more_n = n * 2;
+        util::dim(&format!("  ... use 'ghk history {more_n}' to see more"));
     }
     println!();
 

@@ -211,7 +211,7 @@ pub fn history(count: usize) -> Result<Vec<String>> {
     }
 
     let text = String::from_utf8_lossy(&output.stdout);
-    Ok(text.lines().map(|s| s.to_string()).collect())
+    Ok(text.lines().map(std::string::ToString::to_string).collect())
 }
 
 /// Check if there are unpushed commits

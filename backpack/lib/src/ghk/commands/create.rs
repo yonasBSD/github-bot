@@ -20,7 +20,7 @@ pub fn run() -> Result<()> {
     if git::hasremote() {
         let url = git::remoteurl().unwrap_or_else(|_| "unknown".to_string());
         util::warn("Repository already connected to GitHub");
-        util::dim(&format!("  {}", url));
+        util::dim(&format!("  {url}"));
         util::dim("Run 'ghk push' to save your changes");
         return Ok(());
     }
@@ -56,7 +56,7 @@ pub fn run() -> Result<()> {
     util::info("Creating repository on GitHub...");
     gh::createrepo(&name, private)?;
 
-    util::ok(&format!("Repository '{}' created!", name));
+    util::ok(&format!("Repository '{name}' created!"));
     util::dim("Security features have been enabled:");
     util::ok("  dependency graph");
     util::ok("  security updates");
