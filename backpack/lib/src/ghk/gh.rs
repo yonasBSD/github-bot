@@ -263,6 +263,7 @@ pub fn createruleset(name: &str) -> anyhow::Result<()> {
             "X-GitHub-Api-Version: 2022-11-28",
         ])
         .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::null())
         .spawn()
         .context("Failed to run gh api")?;
 
