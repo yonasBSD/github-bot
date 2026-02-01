@@ -1,9 +1,8 @@
 #[cfg(test)]
 mod tests {
-    use std::{fs, io::Write, path::Path};
+    use std::{fs, io::Write, path::Path, path::PathBuf};
     use tempfile::tempdir;
 
-    //use github_bot_lib::plugins::*;
     use crate::plugins::*;
 
     // --- Test Constants ---
@@ -41,11 +40,11 @@ mod tests {
     "#;
 
     // Updated to Rhai script: deliberately cause a runtime error (Division by zero)
-    const MOCK_SCRIPT_FAIL: &str = r#"
+    const MOCK_SCRIPT_FAIL: &str = r"
         // This script intentionally fails by causing a runtime error
         let zero = 0;
         1 / zero; // Runtime error: Division by zero
-    "#;
+    ";
 
     // --- Helper Functions ---
 

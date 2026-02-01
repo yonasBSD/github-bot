@@ -6,12 +6,10 @@ pub use pr::*;
 pub use release::*;
 pub use workflow::*;
 
-use anyhow::{Context, Result};
+use anyhow::Result;
 use reqwest::StatusCode;
 use reqwest::blocking::{Client, Response};
-use reqwest::header::{ACCEPT, AUTHORIZATION, CONTENT_TYPE, USER_AGENT};
 use serde::{Deserialize, Serialize};
-use std::thread;
 use std::time::Duration;
 
 // --- Constants ---
@@ -29,7 +27,7 @@ pub struct User {
 
 use colored::Colorize;
 use std::env;
-use std::process::{Command, Stdio};
+// Command/Stdio used in integration tests; import inside tests to avoid unused warnings
 use url::Url;
 
 pub struct GitHubClient {
@@ -124,7 +122,7 @@ impl GitHubClient {
         Ok(results)
     }
 
-    /// Performs a simple blocking DELETE request.
+    // /// Performs a simple blocking DELETE request.
     /*
     fn delete(&self, path: &str) -> Result<(), reqwest::Error> {
         let url = self.api_base.join(path).unwrap();

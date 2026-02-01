@@ -16,21 +16,20 @@ pub fn run(kind: Option<LicenseKind>) -> Result<()> {
         return Ok(());
     }
 
-    let license = match kind {
-        Some(ref k) => k,
-        None => {
-            let options = ["MIT", "Apache 2.0", "GPL 3.0", "Unlicense"];
-            let idx = Select::new()
-                .with_prompt("Choose license")
-                .items(&options)
-                .default(0)
-                .interact()?;
-            &match idx {
-                0 => LicenseKind::Mit,
-                1 => LicenseKind::Apache,
-                2 => LicenseKind::Gpl,
-                _ => LicenseKind::Unlicense,
-            }
+    let license = if let Some(ref k) = kind {
+        k
+    } else {
+        let options = ["MIT", "Apache 2.0", "GPL 3.0", "Unlicense"];
+        let idx = Select::new()
+            .with_prompt("Choose license")
+            .items(options)
+            .default(0)
+            .interact()?;
+        &match idx {
+            0 => LicenseKind::Mit,
+            1 => LicenseKind::Apache,
+            2 => LicenseKind::Gpl,
+            _ => LicenseKind::Unlicense,
         }
     };
 
@@ -39,7 +38,7 @@ pub fn run(kind: Option<LicenseKind>) -> Result<()> {
 
     let content = match license {
         LicenseKind::Mit => format!(
-            "MIT License\n\nCopyright (c) {} {}\n\n\
+            "MIT License\n\nCopyright (c) {year} {author}\n\n\
             Permission is hereby granted, free of charge, to any person obtaining a copy\n\
             of this software and associated documentation files (the \"Software\"), to deal\n\
             in the Software without restriction, including without limitation the rights\n\
@@ -55,7 +54,6 @@ pub fn run(kind: Option<LicenseKind>) -> Result<()> {
             LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,\n\
             OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE\n\
             SOFTWARE.\n",
-            year, author
         ),
         LicenseKind::Apache => format!(
             "Copyright {} {}\n\n\

@@ -32,6 +32,7 @@ pub struct Args {
 impl Args {
     /// The "Smart Default" logic.
     /// Priority: 1. CLI Argument, 2. Git Discovery, 3. Hardcoded Fallback
+    #[must_use]
     pub fn resolve_repo(provided: &Option<String>) -> String {
         if let Some(repo) = provided {
             return repo.clone();
@@ -58,7 +59,7 @@ impl Args {
             if parts.len() >= 2 {
                 let repo_name = parts.last()?;
                 let owner = parts.get(parts.len() - 2)?;
-                return Some(format!("{}/{}", owner, repo_name));
+                return Some(format!("{owner}/{repo_name}"));
             }
         }
         None

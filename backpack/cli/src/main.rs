@@ -193,7 +193,9 @@ async fn main() -> anyhow::Result<()> {
             )
             .await;
 
-            wip::run(*no_push, *no_diff, *rewind);
+            if let Err(e) = wip::run(*no_push, *no_diff, *rewind) {
+                logger.err(&format!("{e}"));
+            }
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
 

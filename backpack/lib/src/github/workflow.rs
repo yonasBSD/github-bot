@@ -1,4 +1,3 @@
-use clap::Parser;
 use serde::Deserialize;
 use std::error::Error;
 use std::process::Command;

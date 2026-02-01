@@ -15,14 +15,17 @@ pub fn run(key: Option<String>, value: Option<String>) -> Result<()> {
                 "  editor  = {editor}",
                 editor = cfg.editor.as_deref().unwrap_or("(default)")
             ));
-            util::dim(&format!("  org  = {org}", org = cfg.org.as_deref().unwrap_or("")));
+            util::dim(&format!(
+                "  org  = {org}",
+                org = cfg.org.as_deref().unwrap_or("")
+            ));
             println!();
             util::dim(&format!("Config file: {}", Config::path().display()));
             println!();
         }
         // Show one setting
         (Some(k), None) => match cfg.get(&k) {
-            Some(v) => println!("{}", v),
+            Some(v) => println!("{v}"),
             None => util::warn(&format!("Unknown setting: {k}")),
         },
         // Set a value

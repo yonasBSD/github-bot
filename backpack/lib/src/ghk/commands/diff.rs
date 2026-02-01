@@ -27,7 +27,6 @@ pub fn run() -> Result<()> {
         match origin {
             '+' => print!("\x1b[32m{text}\x1b[0m"), // addition
             '-' => print!("\x1b[31m{text}\x1b[0m"), // deletion
-            ' ' => print!("{text}"),                // context
 
             // hunk header
             'H' => print!("\x1b[1;36m{text}\x1b[0m"),
@@ -38,7 +37,7 @@ pub fn run() -> Result<()> {
             // metadata (index, mode changes, etc.)
             'B' | 'M' => print!("\x1b[33m{text}\x1b[0m"),
 
-            // fallback
+            // context or fallback
             _ => print!("{text}"),
         }
 
