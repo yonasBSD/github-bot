@@ -777,3 +777,41 @@ impl FormatLogger for ModernLogger {
         format!("… {}", m)
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ghk::config;
+
+    #[test]
+    fn simple_logger_color_and_nocolor() {
+        // Ensure nocolor affects output formatting
+        config::setnocolor(true);
+        let s = SimpleLogger.ok_raw("ok");
+        assert_eq!(s, "+ ok");
+        config::setnocolor(false);
+        let s2 = SimpleLogger.ok_raw("ok");
+        assert!(s2.contains("✔"));
+    }
+
+    #[test]
+    fn simple_logger_defaults_quiet() {
+        // Quiet mode should suppress optional messages
+        config::setquiet(true);
+        let l = SimpleLogger;
+        assert!(l.ok("hi").is_none());
+        assert!(l.warn("hi").is_none());
+        assert!(l.info("hi").is_none());
+        assert!(l.dim("hi").is_none());
+        config::setquiet(false);
+        assert!(l.ok("hi").is_some());
+    }
+
+    #[test]
+    fn modern_logger_raws() {
+        let m = ModernLogger;
+        assert_eq!(m.ok_raw("x"), "✔ x");
+        assert_eq!(m.warn_raw("y"), "⚠ y");
+        assert_eq!(m.err_raw("e"), "✗ e");
+    }
+}

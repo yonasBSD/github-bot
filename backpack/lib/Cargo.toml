@@ -63,5 +63,5 @@ git2 = { version = "0.20.3", features = ["vendored-libgit2", "vendored-openssl"]
 chrono = "0.4.42"
 cliclack = "0.3.7"
 terminal-banner = { workspace = true }
-tracing-subscriber = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
 auth-git2 = "0.5.8"
