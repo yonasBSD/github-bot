@@ -5,7 +5,7 @@ authors = ["test@example.com"]
 edition = "2024"
 license = "MIT"
 description = "Library for github-bot"
-repository = "https://github.com/yonasBSD/rust-ci-github-actions-workflow"
+repository = "https://github.com/yonasBSD/github-bot"
 readme = "README.md"
 keywords = ["template", "rust"]
 categories = ["template"]
@@ -21,6 +21,8 @@ coverage = []
 [dev-dependencies]
 mockito = "1.7.1"
 wasm-bindgen-test = "0.3.56"
+serde_json = "1"
+tokio-test = "0.4"
 
 [target.'cfg(not(target_arch = "wasm32"))'.dependencies]
 smol = "2"
@@ -33,19 +35,33 @@ wasm-bindgen-futures = "0.4"
 demonstrate = { git = "https://github.com/yonasBSD/demonstrate" }
 litmus = "0.5.5"
 pretty_assertions = "1.4.1"
-clap.workspace = true
-reqwest.workspace = true
-anyhow.workspace = true
-serde.workspace = true
-serde_json.workspace = true
-tracing.workspace = true
+clap = { workspace = true }
+reqwest = { workspace = true }
+anyhow = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+tracing = { workspace = true }
+once_cell = { workspace = true }
 colored = "3.0.0"
-url = "2.5.7"
+url = "2.5.8"
 tempfile = "3.24.0"
 clap-verbosity-flag = { version = "3.0.4", features = ["tracing"] }
 dirs = "6.0.0"
-toml = "0.9.10"
-tokio.workspace = true
+toml = "0.9.11"
+tokio = { workspace = true }
 futures = "0.3.31"
 rhai = { version = "1.23.6", features = ["serde"] }
 rhai-http = "0.7.0"
+dialoguer = "0.12"
+which = "8.0"
+thiserror = "2.0"
+libc = "0.2"
+indicatif = "0.18"
+clap_complete = "4.5.65"
+strum = { version = "0.27.2", features = ["derive"] }
+git2 = { version = "0.20.3", features = ["vendored-libgit2", "vendored-openssl"] }
+chrono = "0.4.42"
+cliclack = "0.3.7"
+terminal-banner = { workspace = true }
+tracing-subscriber = { workspace = true, features = ["env-filter"] }
+auth-git2 = "0.5.8"

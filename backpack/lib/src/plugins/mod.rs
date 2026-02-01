@@ -87,9 +87,9 @@ impl Plugin {
                 color::cprint(message, "green")
             });
 
-            // Add HTTP fetch via http::client().request
-            use rhai::packages::Package;
-            rhai_http::HttpPackage::new().register_into_engine(&mut engine);
+            // FIX: Add HTTP fetch via http::client().request
+            //use rhai::packages::Package;
+            //rhai_http::HttpPackage::new().register_into_engine(&mut engine);
 
             engine
         }

@@ -1,6 +1,8 @@
 pub mod cli;
+pub mod ghk;
 pub mod git;
 pub mod github;
+pub mod log;
 pub mod plugins;
 
 /// Multiplies two integers
