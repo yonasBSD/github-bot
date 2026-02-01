@@ -206,9 +206,6 @@ fn makespinner(msg: &str) -> ProgressBar {
 
 /// Create default ruleset
 pub fn createruleset(name: &str) -> anyhow::Result<()> {
-    use anyhow::{Context, bail};
-    use std::process::Command;
-
     let (owner, repo) = name
         .split_once('/')
         .expect("input must be in the form owner/repo");
@@ -235,6 +232,11 @@ pub fn createruleset(name: &str) -> anyhow::Result<()> {
   "rules": [
     { "type": "required_signatures", "parameters": {} },
     { "type": "pull_request", "parameters": {
+        "dismiss_stale_reviews_on_push": false,
+        "require_code_owner_review": false,
+        "require_last_push_approval": false,
+        "required_approving_review_count": 0,
+        "required_review_thread_resolution": false,
         "allowed_merge_methods": [
           "squash",
           "rebase"
