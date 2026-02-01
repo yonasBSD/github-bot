@@ -234,7 +234,13 @@ pub fn createruleset(name: &str) -> anyhow::Result<()> {
   ],
   "rules": [
     { "type": "required_signatures", "parameters": {} },
-    { "type": "pull_request" },
+    { "type": "pull_request", "parameters": {
+        "allowed_merge_methods": [
+          "squash",
+          "rebase"
+        ]
+      }
+    },
     { "type": "non_fast_forward", "parameters": {} },
     { "type": "deletion", "parameters": {} }
   ]

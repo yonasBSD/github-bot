@@ -316,8 +316,13 @@ tasks:
 
   run:llvm-cov:
     desc: Run LLVM cov
+    env:
+      LLVM_COV: /usr/local/bin/llvm-cov19
+      LLVM_PROFDATA: /usr/local/bin/llvm-profdata19
     cmds:
       - cargo llvm-cov nextest
+      - cargo llvm-cov --manifest-path backpack/cli/Cargo.toml --fail-under-lines 90 --fail-under-functions 90
+      - cargo llvm-cov --manifest-path backpack/lib/Cargo.toml --fail-under-lines 90 --fail-under-functions 90
 
   audit:licenses:
     desc: Look for incompatible licenses
