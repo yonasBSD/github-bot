@@ -86,7 +86,7 @@ fn test_prune_logic_skips_protected() {
     std::env::set_current_dir(dir.path()).unwrap();
 
     // Create main and a fake remote branch
-    let head = repo.head().ok(); // might be empty on fresh init
+    let _head = repo.head().ok(); // might be empty on fresh init
 
     // The test for prune() is harder because it requires a mock remote.
     // Instead, we test that the logic doesn't crash on an empty repo.

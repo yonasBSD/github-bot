@@ -1,10 +1,10 @@
-use anyhow::{Context, Result, bail};
+use anyhow::{Context, bail};
 use indicatif::{ProgressBar, ProgressStyle};
 use std::process::{Command, Stdio};
 use std::time::Duration;
 
 /// Login to GitHub via gh CLI
-pub fn login() -> Result<()> {
+pub fn login() -> anyhow::Result<()> {
     let status = Command::new("gh")
         .args(["auth", "login"])
         .status()
@@ -17,7 +17,7 @@ pub fn login() -> Result<()> {
 }
 
 /// Logout from GitHub
-pub fn logout() -> Result<()> {
+pub fn logout() -> anyhow::Result<()> {
     let status = Command::new("gh")
         .args(["auth", "logout"])
         .status()
@@ -41,7 +41,7 @@ pub fn loggedin() -> bool {
 }
 
 /// Get current logged in username
-pub fn whoami() -> Result<String> {
+pub fn whoami() -> anyhow::Result<String> {
     let output = Command::new("gh")
         .args(["api", "user", "-q", ".login"])
         .output()
@@ -55,7 +55,7 @@ pub fn whoami() -> Result<String> {
 }
 
 /// List logged in accounts
-pub fn listusers() -> Result<()> {
+pub fn listusers() -> anyhow::Result<()> {
     let status = Command::new("gh")
         .args(["auth", "status"])
         .status()
@@ -68,7 +68,7 @@ pub fn listusers() -> Result<()> {
 }
 
 /// Switch to a different account
-pub fn switchuser(name: &str) -> Result<()> {
+pub fn switchuser(name: &str) -> anyhow::Result<()> {
     let status = Command::new("gh")
         .args(["auth", "switch", "-u", name])
         .status()
@@ -82,7 +82,7 @@ pub fn switchuser(name: &str) -> Result<()> {
 }
 
 /// Create a new repository on GitHub with spinner
-pub fn createrepo(name: &str, private: bool) -> Result<()> {
+pub fn createrepo(name: &str, private: bool) -> anyhow::Result<()> {
     let spinner = makespinner("Creating repository on GitHub...");
 
     let mut args = vec!["repo", "create", name, "--source=.", "--push"];
@@ -116,7 +116,7 @@ pub fn createrepo(name: &str, private: bool) -> Result<()> {
 }
 
 /// Clone a repository by owner/repo name
-pub fn clonerepo(repo: &str, dir: Option<&str>) -> Result<()> {
+pub fn clonerepo(repo: &str, dir: Option<&str>) -> anyhow::Result<()> {
     let spinner = makespinner("Downloading repository...");
 
     let mut args = vec!["repo", "clone", repo];
@@ -147,7 +147,7 @@ pub fn clonerepo(repo: &str, dir: Option<&str>) -> Result<()> {
 }
 
 /// Open repository in browser
-pub fn openrepo() -> Result<()> {
+pub fn openrepo() -> anyhow::Result<()> {
     let status = Command::new("gh")
         .args(["repo", "view", "--web"])
         .status()
@@ -205,8 +205,8 @@ fn makespinner(msg: &str) -> ProgressBar {
 }
 
 /// Create default ruleset
-pub fn createruleset(name: &str) -> Result<()> {
-    use anyhow::{Context, Result, bail};
+pub fn createruleset(name: &str) -> anyhow::Result<()> {
+    use anyhow::{Context, bail};
     use std::process::Command;
 
     let (owner, repo) = name
@@ -279,7 +279,7 @@ pub fn createruleset(name: &str) -> Result<()> {
 }
 
 /// Enable Dependency Graph and Security Analysis
-pub fn enable_dep_graph(name: &str) -> Result<()> {
+pub fn enable_dep_graph(name: &str) -> anyhow::Result<()> {
     let (owner, repo) = name
         .split_once('/')
         .context("Repository name must be in the format 'owner/repo'")?;
@@ -313,7 +313,7 @@ pub fn enable_dep_graph(name: &str) -> Result<()> {
 }
 
 /// Enable Dependabot Security Updates
-pub fn enable_security_updates(name: &str) -> Result<()> {
+pub fn enable_security_updates(name: &str) -> anyhow::Result<()> {
     let (owner, repo) = name
         .split_once('/')
         .context("Repository name must be in the format 'owner/repo'")?;

@@ -58,8 +58,8 @@ pub fn init() {
         // Apply formatting layer, filtered by the combined filter
         //.with(telemetry_fmt.with_filter(combined_filter))
         .with(telemetry_fmt.with_filter(env_filter));
-        // Send traces to tokio console
-        //.with(console_subscriber::spawn());
+    // Send traces to tokio console
+    //.with(console_subscriber::spawn());
 
     if let Err(e) = tracing::subscriber::set_global_default(registry) {
         eprintln!("Failed to set global default subscriber: {e}");

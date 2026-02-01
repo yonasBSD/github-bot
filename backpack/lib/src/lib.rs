@@ -28,7 +28,7 @@ mod test {
                 let four = 4;
             }
 
-            #[should_panic]
+            #[should_panic(expected = "")]
             it "can fail" {
                 pretty_assert_ne!(multiply(2, 2), four);
             }

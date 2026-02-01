@@ -21,8 +21,13 @@ pub fn run(repo: Option<String>, dir: Option<String>) -> Result<()> {
     util::info(&format!("Cloning {reponame}..."));
     gh::clonerepo(&reponame, dir.as_deref())?;
 
-    let dirname =
-        dir.unwrap_or_else(|| reponame.split('/').last().unwrap_or(&reponame).to_string());
+    let dirname = dir.unwrap_or_else(|| {
+        reponame
+            .split('/')
+            .next_back()
+            .unwrap_or(&reponame)
+            .to_string()
+    });
 
     util::ok(&format!("Downloaded to '{dirname}'"));
     util::dim(&format!("cd {dirname} to start working"));

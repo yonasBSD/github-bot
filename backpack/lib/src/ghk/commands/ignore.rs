@@ -26,17 +26,16 @@ pub fn run(template: Option<String>) -> Result<()> {
     }
 
     // Pick template name
-    let name = match template {
-        Some(t) => t,
-        None => {
-            let names: Vec<&str> = TEMPLATES.iter().map(|(n, _)| *n).collect();
-            let idx = Select::new()
-                .with_prompt("Choose template")
-                .items(&names)
-                .default(0)
-                .interact()?;
-            names[idx].to_string()
-        }
+    let name = if let Some(t) = template {
+        t
+    } else {
+        let names: Vec<&str> = TEMPLATES.iter().map(|(n, _)| *n).collect();
+        let idx = Select::new()
+            .with_prompt("Choose template")
+            .items(&names)
+            .default(0)
+            .interact()?;
+        names[idx].to_string()
     };
 
     // Find main template content
@@ -48,10 +47,11 @@ pub fn run(template: Option<String>) -> Result<()> {
             let existing = fs::read_to_string(path).unwrap_or_default();
 
             // Build final template: main + all base templates
-            let mut combined = format!("# {}\n{}", name, main_content);
+            let mut combined = format!("# {name}\n{main_content}");
 
+            use std::fmt::Write as _;
             for (base_name, base_content) in BASE_TEMPLATES {
-                combined.push_str(&format!("\n# base: {}\n{}", base_name, base_content));
+                let _ = write!(combined, "\n# base: {base_name}\n{base_content}");
             }
 
             // If .gitignore already contains the first line of the main template, skip
@@ -70,13 +70,12 @@ pub fn run(template: Option<String>) -> Result<()> {
 
             fs::write(path, new)?;
             util::ok(&format!(
-                "Added {} template (with base templates) to .gitignore",
-                name
+                "Added {name} template (with base templates) to .gitignore"
             ));
         }
 
         None => {
-            util::err(&format!("Unknown template: {}", name));
+            util::err(&format!("Unknown template: {name}"));
             util::dim("Available: node, python, rust, go, java, web, macos, windows, linux, ide");
         }
     }

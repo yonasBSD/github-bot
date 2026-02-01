@@ -21,10 +21,10 @@ pub fn run(cli: Args) -> Result<()> {
 
         // Save config to mark first run complete
         let cfg = config::Config::default();
-        if let Err(_e) = cfg.save() {
+        if let Err(e) = cfg.save() {
             // In production, we might want to log this differently.
             #[cfg(debug_assertions)]
-            eprintln!("Debug: Failed to save config: {}", _e);
+            eprintln!("Debug: Failed to save config: {e}");
         }
     }
 
@@ -52,7 +52,10 @@ pub fn run(cli: Args) -> Result<()> {
             GitCommands::Ignore { template } => crate::ghk::commands::ignore::run(template),
             GitCommands::License { kind } => crate::ghk::commands::license::run(kind),
             GitCommands::Branch { name } => crate::ghk::commands::branch::run(name),
-            GitCommands::Completions { shell } => crate::ghk::commands::completions::run(shell),
+            GitCommands::Completions { shell } => {
+                crate::ghk::commands::completions::run(shell);
+                Ok(())
+            }
         },
         _ => Ok(()),
     }

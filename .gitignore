@@ -28,3 +28,6 @@ coverage/
 
 # Crash dumps
 **/*.core
+
+# coverage data
+**/*.profraw
