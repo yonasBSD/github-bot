@@ -246,7 +246,7 @@ async fn main() -> anyhow::Result<()> {
             logger.outro("Git command complete");
         }
 
-        Commands::Hello {} => {
+        Commands::Hello => {
             logger.intro("Running hello command");
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;

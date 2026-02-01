@@ -9,7 +9,7 @@ pub fn run() -> Result<()> {
     }
 
     let user = gh::whoami().unwrap_or_else(|_| "unknown".to_string());
-    util::info(&format!("Logging out from {}...", user));
+    util::info(&format!("Logging out from {user}..."));
 
     gh::logout()?;
     util::ok("Logged out");

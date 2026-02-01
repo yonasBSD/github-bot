@@ -8,7 +8,7 @@ fn run(cmd: &mut Command) -> anyhow::Result<ExitStatus> {
 
 fn ensure_success(status: ExitStatus, msg: &str) -> anyhow::Result<()> {
     if !status.success() {
-        anyhow::bail!("{}", msg);
+        anyhow::bail!("{msg}");
     }
     Ok(())
 }
@@ -72,14 +72,14 @@ pub fn wip(no_push: bool, no_diff: bool, rewind: Option<u32>) -> anyhow::Result<
 
     // Show diff unless suppressed
     if !no_diff {
-        run(&mut Command::new("git").args(["--no-pager", "diff"]))?;
+        run(Command::new("git").args(["--no-pager", "diff"]))?;
     }
 
     // Add and commit
-    let status = run(&mut Command::new("git").args(["add", "--all"]))?;
+    let status = run(Command::new("git").args(["add", "--all"]))?;
     ensure_success(status, "Failed to stage files")?;
 
-    let status = run(&mut Command::new("git").args(["commit", "-am", "wip 🚧: work-in-progress"]))?;
+    let status = run(Command::new("git").args(["commit", "-am", "wip 🚧: work-in-progress"]))?;
     ensure_success(status, "Unable to create WIP commit")?;
 
     // Determine rewind count
@@ -88,19 +88,19 @@ pub fn wip(no_push: bool, no_diff: bool, rewind: Option<u32>) -> anyhow::Result<
 
     // Soft reset and amend
     ensure_success(
-        run(&mut Command::new("git").args(["reset", "--soft", &head_arg]))?,
+        run(Command::new("git").args(["reset", "--soft", &head_arg]))?,
         "git reset failed",
     )?;
 
     ensure_success(
-        run(&mut Command::new("git").args(["commit", "--all", "--amend", "--no-edit"]))?,
+        run(Command::new("git").args(["commit", "--all", "--amend", "--no-edit"]))?,
         "git amend failed",
     )?;
 
     // Push unless suppressed
     if !no_push {
         ensure_success(
-            run(&mut Command::new("git").args(["push", "-f"]))?,
+            run(Command::new("git").args(["push", "-f"]))?,
             "git push failed",
         )?;
     }
@@ -156,40 +156,36 @@ fn delete_stale_local_branches(confirm: bool) -> anyhow::Result<()> {
             let has_tracking_config = branch.upstream().is_ok();
 
             if has_tracking_config {
-                println!(
-                    "  - Branch '{}' tracks a deleted remote branch. Deleting...",
-                    branch_name
-                );
+                println!("  - Branch '{branch_name}' tracks a deleted remote branch. Deleting...");
                 branches_to_delete.push(branch_name);
             } else {
                 use std::io::IsTerminal;
 
                 if std::io::stdin().is_terminal() {
                     //cliclack::log::remark("This branch exists locally but not on origin/main.")?;
-                    let ans = match confirm {
-                        true => true,
-                        false => {
-                            cliclack::confirm(format!(
-                                "Branch '{}' has no remote counterpart. Delete locally?",
-                                branch_name
-                            ))
-                            .initial_value(false) // Default to 'No'
-                            .interact()?
-                        }
+                    let ans = if confirm {
+                        true
+                    } else {
+                        cliclack::confirm(format!(
+                            "Branch '{branch_name}' has no remote counterpart. Delete locally?"
+                        ))
+                        .initial_value(false) // Default to 'No'
+                        .interact()?
                     };
 
-                    match ans {
-                        true => branches_to_delete.push(branch_name),
-                        false => cliclack::log::remark(format!(
-                            "\x1b[90m  - Skipping '{}'.\x1b[0m",
-                            branch_name
-                        ))?,
-                    };
+                    if ans {
+                        branches_to_delete.push(branch_name)
+                    } else {
+                        cliclack::log::remark(format!(
+                            "\x1b[90m  - Skipping '{branch_name}'.\x1b[0m"
+                        ))?
+                    }
                 } else {
-                    match confirm {
-                        true => branches_to_delete.push(branch_name),
-                        false => println!("\x1b[90m  - Skipping '{}'.\x1b[0m", branch_name),
-                    };
+                    if confirm {
+                        branches_to_delete.push(branch_name)
+                    } else {
+                        println!("\x1b[90m  - Skipping '{branch_name}'.\x1b[0m")
+                    }
                 }
             }
         }
@@ -198,7 +194,7 @@ fn delete_stale_local_branches(confirm: bool) -> anyhow::Result<()> {
     for name in branches_to_delete {
         let mut b = repo.find_branch(&name, git2::BranchType::Local)?;
 
-        cliclack::log::remark(format!("\x1b[32m✔\x1b[0m Deleting branch '{}'.", name))?;
+        cliclack::log::remark(format!("\x1b[32m✔\x1b[0m Deleting branch '{name}'."))?;
         b.delete()?;
     }
 
@@ -209,12 +205,12 @@ pub fn prune(confirm: bool) -> anyhow::Result<()> {
     cliclack::intro("Cleaning up stale branches")?;
 
     match delete_stale_local_branches(confirm) {
-        Ok(_) => cliclack::outro("You're all set!")?,
+        Ok(()) => cliclack::outro("You're all set!")?,
         Err(e) => {
-            eprintln!("Error managing branches: {}", e);
+            eprintln!("Error managing branches: {e}");
             return Err(e);
         }
-    };
+    }
 
     Ok(())
 }

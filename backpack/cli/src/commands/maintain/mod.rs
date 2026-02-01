@@ -56,21 +56,15 @@ pub fn run(repo: String, action: &Option<String>) -> anyhow::Result<()> {
     if is_release_action {
         println!("Starting full release cleanup");
 
-        match github::delete_all_releases(&client, &repo) {
-            Err(e) => {
-                eprintln!(
-                    "Failed to complete full release cleanup for {}: {}",
-                    repo, e
-                );
-            }
-            Ok(_) => {
-                println!("Deleted all releases and tags");
+        if let Err(e) = github::delete_all_releases(&client, &repo) {
+            eprintln!("Failed to complete full release cleanup for {repo}: {e}");
+        } else {
+            println!("Deleted all releases and tags");
 
-                // Then create the new release
-                github::create_release(&client, &repo)?;
+            // Then create the new release
+            github::create_release(&client, &repo)?;
 
-                println!("Created new release");
-            }
+            println!("Created new release");
         }
 
         println!("Release cleanup complete");

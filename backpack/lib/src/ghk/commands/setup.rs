@@ -35,7 +35,7 @@ pub fn run() -> Result<()> {
     // Check login
     if gh::loggedin() {
         let user = gh::whoami().unwrap_or_else(|_| "unknown".to_string());
-        util::ok(&format!("Logged in as {}", user));
+        util::ok(&format!("Logged in as {user}"));
     } else {
         util::warn("Not logged in to GitHub");
         if Confirm::new()
@@ -82,7 +82,7 @@ pub fn run() -> Result<()> {
 
 fn installtool(tool: &str) -> Result<()> {
     if !Confirm::new()
-        .with_prompt(&format!("Install {tool} now?"))
+        .with_prompt(format!("Install {tool} now?"))
         .default(true)
         .interact()?
     {

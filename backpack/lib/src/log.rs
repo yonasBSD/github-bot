@@ -108,7 +108,7 @@ pub enum LogFormat {
 }
 
 /// A span that tracks when it was entered so we can compute
-/// how long the task took when outro() / done() is called.
+/// how long the task took when `outro()` / `done()` is called.
 struct TimedSpan {
     /// Timestamp when the span was entered
     start: Instant,
@@ -282,7 +282,7 @@ pub trait FormatLogger {
 /// plain ASCII or ANSI escape codes depending on configuration.
 ///
 /// This logger does *not* print anything — it only formats strings.
-/// Quiet-mode suppression is handled by the FormatLogger trait.
+/// Quiet-mode suppression is handled by the `FormatLogger` trait.
 pub struct SimpleLogger;
 
 impl FormatLogger for SimpleLogger {
@@ -292,65 +292,65 @@ impl FormatLogger for SimpleLogger {
     fn ok_raw(&self, m: &str) -> String {
         // Green checkmark (or ASCII fallback)
         if config::isnocolor() {
-            format!("+ {}", m)
+            format!("+ {m}")
         } else {
-            format!("\x1b[32m✔\x1b[0m {}", m)
+            format!("\x1b[32m✔\x1b[0m {m}")
         }
     }
 
     fn warn_raw(&self, m: &str) -> String {
         // Yellow warning sign (or ASCII fallback)
         if config::isnocolor() {
-            format!("! {}", m)
+            format!("! {m}")
         } else {
-            format!("\x1b[33m⚠\x1b[0m {}", m)
+            format!("\x1b[33m⚠\x1b[0m {m}")
         }
     }
 
     fn err_raw(&self, m: &str) -> String {
         // Red X (always shown)
         if config::isnocolor() {
-            format!("X {}", m)
+            format!("X {m}")
         } else {
-            format!("\x1b[31m✗\x1b[0m {}", m)
+            format!("\x1b[31m✗\x1b[0m {m}")
         }
     }
 
     fn info_raw(&self, m: &str) -> String {
         // Simple indented info line
-        format!("  {}", m)
+        format!("  {m}")
     }
 
     fn dim_raw(&self, m: &str) -> String {
         // Dim gray (or plain)
         if config::isnocolor() {
-            format!("  {}", m)
+            format!("  {m}")
         } else {
-            format!("\x1b[90m  {}\x1b[0m", m)
+            format!("\x1b[90m  {m}\x1b[0m")
         }
     }
 
     fn intro_raw(&self, m: &str) -> String {
         // Start of a task
-        format!("→ {}", m)
+        format!("→ {m}")
     }
 
     fn outro_raw(&self, m: &str) -> String {
         // End of a task
-        format!("✓ {}", m)
+        format!("✓ {m}")
     }
 
     fn done_raw(&self, m: &str) -> String {
         // End of a task
-        format!("✓ Done! {}", m)
+        format!("✓ Done! {m}")
     }
 
     fn step_raw(&self, m: &str) -> String {
         // Progress indicator
         if config::isnocolor() {
-            format!("* {}", m)
+            format!("* {m}")
         } else {
-            format!("\x1b[36m⠿\x1b[0m {}", m)
+            format!("\x1b[36m⠿\x1b[0m {m}")
         }
     }
 
@@ -377,7 +377,7 @@ impl FormatLogger for SimpleLogger {
 /// It does not format messages itself — instead, it delegates to a `FormatLogger`
 /// implementation and then prints the resulting strings.
 ///
-/// All quiet-mode logic is handled in the FormatLogger layer.
+/// All quiet-mode logic is handled in the `FormatLogger` layer.
 pub trait ScreenLogger {
     /// Print a success message
     fn ok(&self, m: &str);
@@ -434,18 +434,18 @@ pub trait ScreenLogger {
 /// also emits structured tracing spans.
 ///
 /// This logger supports:
-///   - Nested task spans via intro() / outro() / done()
+///   - Nested task spans via `intro()` / `outro()` / `done()`
 ///   - Nested step spans inside tasks
 ///   - Timing of task spans
 ///   - Cargo-style verbosity levels
 pub struct Printer<L: FormatLogger> {
-    /// The underlying formatter (SimpleLogger, ModernLogger, etc.)
+    /// The underlying formatter (`SimpleLogger`, `ModernLogger`, etc.)
     inner: L,
 
-    /// Stack of active task spans created by intro()
+    /// Stack of active task spans created by `intro()`
     tasks: RefCell<Vec<TimedSpan>>,
 
-    /// Stack of active step spans created by step()
+    /// Stack of active step spans created by `step()`
     steps: RefCell<Vec<()>>,
 
     /// Output format: Text (default) or Json
@@ -459,7 +459,7 @@ pub struct Printer<L: FormatLogger> {
 
 impl<L: FormatLogger> Printer<L> {
     /// Create a new printer with the given formatter and output format.
-    pub fn new(inner: L, format: LogFormat) -> Self {
+    pub const fn new(inner: L, format: LogFormat) -> Self {
         Self {
             inner,
             tasks: RefCell::new(Vec::new()),
@@ -687,7 +687,7 @@ impl<L: FormatLogger> Printer<L> {
     /// Emit a single log event as a JSON object.
     ///
     /// This function:
-    ///   - Builds a structured JSON object using serde_json
+    ///   - Builds a structured JSON object using `serde_json`
     ///   - Includes a timestamp for easier log correlation
     ///   - Sends errors to stderr and all other levels to stdout
     ///   - Does NOT create tracing spans (that happens elsewhere)
@@ -708,8 +708,8 @@ impl<L: FormatLogger> Printer<L> {
 
         // Print to stderr for errors, stdout otherwise
         match level {
-            "error" => eprintln!("{}", obj.to_string()),
-            _ => println!("{}", obj.to_string()),
+            "error" => eprintln!("{obj}"),
+            _ => println!("{obj}"),
         }
     }
 }
@@ -717,7 +717,7 @@ impl<L: FormatLogger> Printer<L> {
 /// A modern, minimal logger inspired by cliclack's visual style.
 ///
 /// This logger only *formats* messages — it does not print.
-/// Quiet-mode suppression is handled by the FormatLogger trait.
+/// Quiet-mode suppression is handled by the `FormatLogger` trait.
 pub struct ModernLogger;
 
 impl FormatLogger for ModernLogger {
@@ -726,55 +726,55 @@ impl FormatLogger for ModernLogger {
     }
     fn ok_raw(&self, m: &str) -> String {
         // Clean success checkmark
-        format!("✔ {}", m)
+        format!("✔ {m}")
     }
 
     fn warn_raw(&self, m: &str) -> String {
         // Clean warning symbol
-        format!("⚠ {}", m)
+        format!("⚠ {m}")
     }
 
     fn err_raw(&self, m: &str) -> String {
         // Clean error symbol
-        format!("✗ {}", m)
+        format!("✗ {m}")
     }
 
     fn info_raw(&self, m: &str) -> String {
         // Info symbol
-        format!("ℹ {}", m)
+        format!("ℹ {m}")
     }
 
     fn dim_raw(&self, m: &str) -> String {
         // Muted remark-style prefix
-        format!("› {}", m)
+        format!("› {m}")
     }
 
     fn intro_raw(&self, m: &str) -> String {
         // Start of a task
-        format!("→ {}", m)
+        format!("→ {m}")
     }
 
     fn outro_raw(&self, m: &str) -> String {
         // End of a task
-        format!("✔ {}", m)
+        format!("✔ {m}")
     }
 
     fn done_raw(&self, m: &str) -> String {
         // End of a task
-        format!("✔ {}", m)
+        format!("✔ {m}")
     }
 
     fn step_raw(&self, m: &str) -> String {
         // Progress indicator
-        format!("⠿ {}", m)
+        format!("⠿ {m}")
     }
 
     fn debug_raw(&self, m: &str) -> String {
-        format!("🔍 {}", m)
+        format!("🔍 {m}")
     }
 
     fn trace_raw(&self, m: &str) -> String {
-        format!("… {}", m)
+        format!("… {m}")
     }
 }
 

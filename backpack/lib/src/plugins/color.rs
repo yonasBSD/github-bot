@@ -1,4 +1,4 @@
-use colored::*;
+use colored::Color;
 use rhai::EvalAltResult;
 use std::fmt::Display;
 
@@ -22,7 +22,7 @@ pub fn cprint(message: &str, color_name: &str) -> Result<(), Box<EvalAltResult>>
         _ => {
             // If the color is unknown, just print the message normally and give a warning.
             eprintln!("Rhai Color Error: Unknown color '{color_name}'. Printing uncolored.");
-            println!("{}", message);
+            println!("{message}");
         }
     }
     Ok(())

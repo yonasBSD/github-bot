@@ -2,8 +2,7 @@ use serde::Deserialize;
 use std::error::Error;
 use std::process::Command;
 
-use crate::github::GitHubClient;
-use crate::log::*;
+use crate::{github::GitHubClient, log::log};
 use colored::Colorize;
 use std::thread;
 use std::time::Duration;
@@ -63,10 +62,7 @@ async fn get_workflow_runs(
     repo: &str,
     commit: &str,
 ) -> Result<Vec<WorkflowRun>, Box<dyn Error>> {
-    let url = format!(
-        "https://api.github.com/repos/{}/actions/runs?head_sha={}",
-        repo, commit
-    );
+    let url = format!("https://api.github.com/repos/{repo}/actions/runs?head_sha={commit}");
 
     let http_client = reqwest::Client::new();
     let response = http_client
@@ -91,10 +87,8 @@ async fn rerun_workflow(
     repo: &str,
     run_id: u64,
 ) -> Result<(), Box<dyn Error>> {
-    let url = format!(
-        "https://api.github.com/repos/{}/actions/runs/{}/rerun-failed-jobs",
-        repo, run_id
-    );
+    let url =
+        format!("https://api.github.com/repos/{repo}/actions/runs/{run_id}/rerun-failed-jobs");
 
     let http_client = reqwest::Client::new();
     let response = http_client
@@ -119,30 +113,28 @@ pub async fn rerun_workflows(
     repo: Option<String>,
 ) -> Result<(), Box<dyn Error>> {
     // Get commit SHA
-    let commit = match commit {
-        Some(c) => c,
-        None => {
-            println!("No commit specified, using latest commit...");
-            get_latest_commit()?
-        }
+    let commit = if let Some(c) = commit {
+        c
+    } else {
+        println!("No commit specified, using latest commit...");
+        get_latest_commit()?
     };
 
-    println!("Using commit: {}", commit);
+    println!("Using commit: {commit}");
 
     // Get repository
-    let repo = match repo {
-        Some(r) => r,
-        None => {
-            println!("No repository specified, detecting from git remote...");
-            get_repo_from_git()?
-        }
+    let repo = if let Some(r) = repo {
+        r
+    } else {
+        println!("No repository specified, detecting from git remote...");
+        get_repo_from_git()?
     };
 
-    println!("Repository: {}\n", repo);
+    println!("Repository: {repo}\n");
 
     // Get workflow runs for the commit
     println!("Fetching workflow runs...");
-    let runs = get_workflow_runs(&client, &repo, &commit).await?;
+    let runs = get_workflow_runs(client, &repo, &commit).await?;
 
     if runs.is_empty() {
         println!("No workflow runs found for this commit.");
@@ -181,9 +173,9 @@ pub async fn rerun_workflows(
     println!("Re-running failed workflows...\n");
     for run in &failed_runs {
         print!("Re-running '{}'... ", run.name);
-        match rerun_workflow(&client, &repo, run.id).await {
-            Ok(_) => log().success(""),
-            Err(e) => log().fail(&format!("Failed: {}", e)),
+        match rerun_workflow(client, &repo, run.id).await {
+            Ok(()) => log().success(""),
+            Err(e) => log().fail(&format!("Failed: {e}")),
         }
     }
 
