@@ -43,8 +43,6 @@ pub fn run(repo: String, action: &Option<String>) -> anyhow::Result<()> {
         }
     }
 
-    println!("Deleting branch '{}'.", repo);
-
     // Cleanup Repo (Always executed unless 'rerun')
     github::delete_failed_workflows(&client, &repo);
     println!("Deleted failed workflows");
