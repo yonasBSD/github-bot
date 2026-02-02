@@ -20,7 +20,7 @@ jobs:
       RUSTC_WRAPPER: "sccache"
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -41,11 +41,11 @@ jobs:
             static.crates.io:443
             index.crates.io:443
 
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
       - name: Cargo Format
-        uses: yonasBSD/toolkit@9067fa17c79d97c3bad28da5ebba1d3c32ab3582 # v0.1.0
+        uses: yonasBSD/toolkit@7757e45441401d468ec049000c61571426a47de4 # v1.0.0
         with:
           run: |
             cargo format --version
@@ -53,7 +53,7 @@ jobs:
             cargo format --check
 
       - name: Tree Format
-        uses: yonasBSD/toolkit@9067fa17c79d97c3bad28da5ebba1d3c32ab3582 # v0.1.0
+        uses: yonasBSD/toolkit@7757e45441401d468ec049000c61571426a47de4 # v1.0.0
         with:
           run: |
             treefmt
@@ -66,7 +66,7 @@ jobs:
       RUSTC_WRAPPER: "sccache"
     steps:
       - name: Harden Runner
-        uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+        uses: step-security/harden-runner@e3f713f2d8f53843e71c69a996d56f51aa9adfb9 # v2.14.1
         with:
           disable-sudo: true
           egress-policy: block
@@ -87,10 +87,10 @@ jobs:
             index.crates.io:443
             static.crates.io:443
 
-      - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
-      - uses: dtolnay/rust-toolchain@f7ccc83f9ed1e5b9c81d8a67d7ad1a747e22a561 # stable
+      - uses: dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9 # v1
         with:
           toolchain: stable
           components: clippy
@@ -110,7 +110,7 @@ jobs:
   #    RUSTC_WRAPPER: "sccache"
   #  steps:
   #    - name: Harden Runner
-  #      uses: step-security/harden-runner@20cf305ff2072d973412fa9b1e3a4f227bda3c76 # v2.14.0
+ # v2.14.1
   #      with:
   #        disable-sudo: true
   #        egress-policy: block
@@ -131,6 +131,6 @@ jobs:
   #          index.crates.io:443
   #          static.crates.io:443
   #
-  #    - uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+ # v6.0.2
   #    - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
   #    - uses: obi1kenobi/cargo-semver-checks-action@5b298c9520f7096a4683c0bd981a7ac5a7e249ae # v2.8
