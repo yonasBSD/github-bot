@@ -65,3 +65,4 @@ cliclack = "0.3.7"
 terminal-banner = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 auth-git2 = "0.5.8"
+log-rs = { git = "https://github.com/yonasBSD/log.rs", version = "0.1.0" }

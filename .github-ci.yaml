@@ -1,0 +1,13 @@
+linters:
+    default: all
+    enable: []
+    disable: []
+upgrade:
+    format: hash
+    actions:
+      mozilla-actions/sccache-action:
+        constraint: ^0.0.0
+      bnjbvr/cargo-machete:
+        constraint: ^0.0.0
+      anchore/sbom-action/download-syft:
+        constraint: ^0.0.0

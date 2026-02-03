@@ -2,7 +2,9 @@ use serde::Deserialize;
 use std::error::Error;
 use std::process::Command;
 
-use crate::{github::GitHubClient, log::log};
+//use crate::{github::GitHubClient, log::log};
+use crate::github::GitHubClient;
+use log_rs::logging::log::*;
 use colored::Colorize;
 use std::thread;
 use std::time::Duration;
@@ -174,18 +176,18 @@ pub async fn rerun_workflows(
     for run in &failed_runs {
         print!("Re-running '{}'... ", run.name);
         match rerun_workflow(client, &repo, run.id).await {
-            Ok(()) => log().success(""),
-            Err(e) => log().fail(&format!("Failed: {e}")),
-        }
+            Ok(()) => ok(""),
+            Err(e) => err(&format!("Failed: {e}")),
+        };
     }
 
-    log().done("Done");
+    done();
     Ok(())
 }
 
 /// Deletes failed/cancelled workflows concurrently using standard threads (max 10 at a time).
 pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
-    log().intro(&format!("Deleting failed workflows for {repo}"));
+    intro(&format!("Deleting failed workflows for {repo}"));
 
     let path = &format!("repos/{repo}/actions/runs");
     match client.fetch_paginated::<WorkflowRun>(path) {
@@ -227,7 +229,7 @@ pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
                                 .send();
 
                             if let Err(e) = res {
-                                log().err(&format!(
+                                err(&format!(
                                     "{}",
                                     format!("Error deleting workflow run {id_copy}: {e}").red()
                                 ));
@@ -241,16 +243,16 @@ pub fn delete_failed_workflows(client: &GitHubClient, repo: &str) {
                     }
                 }
 
-                log().ok(&format!("{count} failed/cancelled workflows deleted."));
+                ok(&format!("{count} failed/cancelled workflows deleted."));
             } else {
-                log().info("No failed/cancelled workflows found.");
+                info("No failed/cancelled workflows found.");
             }
         }
         Err(e) => {
-            log().err(&format!("Error fetching workflow runs: {e}"));
+            err(&format!("Error fetching workflow runs: {e}"));
         }
     }
-    log().done("Done");
+    done();
 }
 
 /// Reruns failed workflow jobs.

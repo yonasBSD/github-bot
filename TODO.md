@@ -2,20 +2,23 @@
 
 ## Features
 - github-bot.rs
-  - re-run failed workflow runs
-  - report on GitHub API status
-  - modify CLI arguments
-  - add CLI flags
-  - git-init
-  - gitignore
-  - try-rs
-  - clean build artifacts (https://github.com/tbillington/kondo)
+  - [ ] re-run failed workflow runs
+  - [ ] report on GitHub API status
+  - [ ] modify CLI arguments
+  - [ ] add CLI flags
+  - [ ] git-init
+  - [ ] gitignore
+  - [ ] try-rs
+  - [ ] clean build artifacts (https://github.com/tbillington/kondo, https://github.com/yonasBSD/swab)
+  - [ ] fork with branch protection
+  - [x] create repo with branch protection and secure defaults
+  - fork with branch protection and secure defaults
 - bot.rs
-  - generic bot
+  - [ ] generic bot
 - script.rs
-  - zinit service init system
+  - [ ] zinit service init system
 - run.rs
-  - run framework
+  - [ ] run framework
 
 ## Deployments
 
@@ -45,7 +48,7 @@ Add helm chart.
 ### Architecture
 - OS
   - Linux
-    - Ubuntu / Debian 
+    - Ubuntu / Debian
     - Alpine
     - OpenSUSE
     - Fedora / Rocky

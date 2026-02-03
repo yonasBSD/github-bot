@@ -4,10 +4,10 @@
 use crate::ghk::config;
 use once_cell::sync::OnceCell;
 use std::{cell::RefCell, sync::Arc, time::Instant};
-use terminal_banner::Banner;
 use tracing::{Level, debug, error, info, span, trace, warn};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{EnvFilter, Registry};
+use log_rs::banner::{BannerConfig, print as print_banner};
 
 /// A global, thread-safe screen logger.
 ///
@@ -69,15 +69,25 @@ pub fn init() {
     tracing::trace!("Tracing initialized!");
     tracing::debug!("Ready to begin...");
 
+    //
+    // ────────────────────────────────────────────────────────────────
+    // Banner (only when RUST_LOG=debug or trace)
+    // ────────────────────────────────────────────────────────────────
+    //
+    const PROJECT_NAME: &str = env!("CARGO_PKG_NAME");
+    const PROJECT_DESC: &str = env!("CARGO_PKG_DESCRIPTION");
+
     if std::env::var("RUST_LOG").is_ok()
         && ["debug", "trace"].contains(&std::env::var("RUST_LOG").unwrap().to_lowercase().as_str())
     {
-        let banner = Banner::new()
-            .text(format!("Welcome to {}!", env!("CARGO_PKG_NAME")).into())
-            .text(env!("CARGO_PKG_DESCRIPTION").into())
-            .render();
-
-        println!("{banner}");
+        // Print application banner
+        let banner = BannerConfig {
+            name: PROJECT_NAME,
+            version: env!("CARGO_PKG_VERSION"),
+            tagline: PROJECT_DESC.into(),
+            addr: None,
+        };
+        print_banner(&banner);
     }
 }
 

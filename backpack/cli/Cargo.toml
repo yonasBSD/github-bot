@@ -24,6 +24,7 @@ rootcause = "0.11.1"
 rootcause-backtrace = "0.11.1"
 tokio = { workspace = true }
 env-rs = { git = "https://github.com/yonasBSD/env.rs", version = "0.1.0" }
+log-rs = { git = "https://github.com/yonasBSD/log.rs", version = "0.1.0" }
 
 [[bin]]
 name = "github-bot"
