@@ -2,12 +2,12 @@
 #![allow(dropping_copy_types)]
 
 use crate::ghk::config;
+use log_rs::banner::{BannerConfig, print as print_banner};
 use once_cell::sync::OnceCell;
 use std::{cell::RefCell, sync::Arc, time::Instant};
 use tracing::{Level, debug, error, info, span, trace, warn};
 use tracing_subscriber::prelude::*;
 use tracing_subscriber::{EnvFilter, Registry};
-use log_rs::banner::{BannerConfig, print as print_banner};
 
 /// A global, thread-safe screen logger.
 ///

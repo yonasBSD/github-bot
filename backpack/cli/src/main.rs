@@ -5,12 +5,10 @@ use commands::{git, hello, maintain, merge, prune, wip};
 use std::env;
 
 use github_bot_lib::cli::{Args, Commands};
-use log_rs::{
-    logging::{
-        LogFormat, Printer, ModernLogger, ModernBackend, Verbosity, log::*, set_logger,
-    },
-};
 use github_bot_lib::plugins::{self, Event};
+use log_rs::logging::{
+    LogFormat, ModernBackend, ModernLogger, Printer, Verbosity, log::*, set_logger,
+};
 
 #[cfg(not(target_arch = "wasm32"))]
 use human_panic::{metadata, setup_panic};

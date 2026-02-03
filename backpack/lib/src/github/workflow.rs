@@ -4,8 +4,8 @@ use std::process::Command;
 
 //use crate::{github::GitHubClient, log::log};
 use crate::github::GitHubClient;
-use log_rs::logging::log::*;
 use colored::Colorize;
+use log_rs::logging::log::*;
 use std::thread;
 use std::time::Duration;
 
