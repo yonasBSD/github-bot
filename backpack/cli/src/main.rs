@@ -5,9 +5,11 @@ use commands::{git, hello, maintain, merge, prune, wip};
 use std::env;
 
 use github_bot_lib::cli::{Args, Commands};
-use github_bot_lib::log::{self, LogFormat, Printer, ScreenLogger, SimpleLogger, Verbosity};
+use github_bot_lib::log::{
+    self, LogFormat, Printer, ScreenLogger, SimpleLogger, Verbosity, banner,
+};
 use github_bot_lib::plugins::{self, Event};
-use terminal_banner::Banner;
+use github_bot_lib::{intro, outro};
 
 #[cfg(not(target_arch = "wasm32"))]
 use human_panic::{metadata, setup_panic};
@@ -72,17 +74,7 @@ async fn main() -> anyhow::Result<()> {
     //
     const PROJECT_NAME: &str = env!("CARGO_PKG_NAME");
     const PROJECT_DESC: &str = env!("CARGO_PKG_DESCRIPTION");
-
-    if std::env::var("RUST_LOG").is_ok()
-        && ["debug", "trace"].contains(&std::env::var("RUST_LOG").unwrap().to_lowercase().as_str())
-    {
-        let banner = Banner::new()
-            .text(format!("Welcome to {PROJECT_NAME}!").into())
-            .text(PROJECT_DESC.into())
-            .render();
-
-        println!("{banner}");
-    }
+    banner(PROJECT_NAME, PROJECT_DESC);
 
     //
     // ────────────────────────────────────────────────────────────────
@@ -101,7 +93,7 @@ async fn main() -> anyhow::Result<()> {
     // Plugin Initialization Phase
     // ────────────────────────────────────────────────────────────────
     //
-    logger.intro("Initializing plugins");
+    intro!(logger, "Initializing plugins");
 
     plugins::broadcast_event(&[], Event::PluginRegistrationInit).await;
 
@@ -116,7 +108,7 @@ async fn main() -> anyhow::Result<()> {
 
     plugins::broadcast_event(&plugins, Event::PluginRegistrationEnd).await;
 
-    logger.outro("Plugin registration complete");
+    outro!(logger, "Plugin registration complete");
 
     //
     // ────────────────────────────────────────────────────────────────
@@ -125,7 +117,7 @@ async fn main() -> anyhow::Result<()> {
     //
     match &cli.command {
         Commands::Maintain { repo, action } => {
-            logger.intro("Running maintain command");
+            intro!(logger, "Running maintain command");
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
 
@@ -145,11 +137,11 @@ async fn main() -> anyhow::Result<()> {
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
 
-            logger.outro("Maintain command complete");
+            outro!(logger, "Maintain command complete");
         }
 
         Commands::Merge { repo } => {
-            logger.intro("Running merge command");
+            intro!(logger, "Running merge command");
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
 
@@ -168,7 +160,7 @@ async fn main() -> anyhow::Result<()> {
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
 
-            logger.outro("Merge command complete");
+            outro!(logger, "Merge command complete");
         }
 
         Commands::Wip {
@@ -176,7 +168,7 @@ async fn main() -> anyhow::Result<()> {
             no_diff,
             rewind,
         } => {
-            logger.intro("Running wip command");
+            intro!(logger, "Running wip command");
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
 
@@ -199,11 +191,11 @@ async fn main() -> anyhow::Result<()> {
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
 
-            logger.outro("Wip command complete");
+            outro!(logger, "Wip command complete");
         }
 
         Commands::Prune { yes } => {
-            logger.intro("Running prune command");
+            intro!(logger, "Running prune command");
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
 
@@ -222,11 +214,11 @@ async fn main() -> anyhow::Result<()> {
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
 
-            logger.outro("Prune command complete");
+            outro!(logger, "Prune command complete");
         }
 
         Commands::Git { command } => {
-            logger.intro("Running git command");
+            intro!(logger, "Running git command");
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
 
@@ -243,11 +235,11 @@ async fn main() -> anyhow::Result<()> {
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
 
-            logger.outro("Git command complete");
+            outro!(logger, "Git command complete");
         }
 
         Commands::Hello => {
-            logger.intro("Running hello command");
+            intro!(logger, "Running hello command");
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionInit).await;
 
@@ -264,7 +256,7 @@ async fn main() -> anyhow::Result<()> {
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
 
-            logger.outro("Hello command complete");
+            outro!(logger, "Hello command complete");
         }
     }
 
