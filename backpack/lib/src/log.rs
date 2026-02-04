@@ -17,6 +17,76 @@ use tracing_subscriber::{EnvFilter, Registry};
 /// The logger must be initialized once at startup using `set_logger()`.
 static LOGGER: OnceCell<Arc<dyn ScreenLogger + Send + Sync>> = OnceCell::new();
 
+use std::sync::LazyLock;
+
+// 1. Use LazyLock to allow runtime logic in a static context
+static IS_DEBUG: LazyLock<bool> = LazyLock::new(|| {
+    match verbosity() {
+        Verbosity::Verbose | Verbosity::Trace => true,
+        _ => {
+            // Use .ok() to handle the Result safely without multiple unwrap calls
+            if let Ok(log_var) = std::env::var("RUST_LOG") {
+                let log_var = log_var.to_lowercase();
+                log_var.contains("debug") || log_var.contains("trace")
+            } else {
+                false
+            }
+        }
+    }
+});
+
+fn verbosity() -> Verbosity {
+    let mut level = Verbosity::Normal;
+
+    for arg in std::env::args().skip(1) {
+        match arg.as_str() {
+            "-q" => level = Verbosity::Quiet,
+            "-v" => level = Verbosity::Verbose,
+            "-vv" => level = Verbosity::Trace,
+            _ => {}
+        }
+    }
+    level
+}
+
+pub fn is_debug() -> bool {
+    *IS_DEBUG
+}
+
+#[macro_export]
+macro_rules! intro {
+    ($logger:ident, $($arg:expr),*) => {
+        if $crate::log::is_debug() {
+            $logger.intro($($arg),*)
+        }
+    };
+}
+
+#[macro_export]
+macro_rules! outro {
+    ($logger:ident, $($arg:expr),*) => {
+        if $crate::log::is_debug() {
+            $logger.outro($($arg),*)
+        }
+    };
+}
+
+//
+// ────────────────────────────────────────────────────────────────
+// Banner (only when RUST_LOG=debug or trace)
+// ────────────────────────────────────────────────────────────────
+//
+pub fn banner(name: &str, desc: &str) {
+    if is_debug() {
+        let banner = Banner::new()
+            .text(format!("Welcome to {name}!").into())
+            .text(desc.into())
+            .render();
+
+        println!("{banner}");
+    }
+}
+
 /// Set the global logger.
 ///
 /// This should be called once during program initialization.
@@ -68,17 +138,6 @@ pub fn init() {
     tracing::debug!("Logging initialized!");
     tracing::trace!("Tracing initialized!");
     tracing::debug!("Ready to begin...");
-
-    if std::env::var("RUST_LOG").is_ok()
-        && ["debug", "trace"].contains(&std::env::var("RUST_LOG").unwrap().to_lowercase().as_str())
-    {
-        let banner = Banner::new()
-            .text(format!("Welcome to {}!", env!("CARGO_PKG_NAME")).into())
-            .text(env!("CARGO_PKG_DESCRIPTION").into())
-            .render();
-
-        println!("{banner}");
-    }
 }
 
 /// Cargo-style verbosity levels.
