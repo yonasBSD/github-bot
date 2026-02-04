@@ -87,7 +87,7 @@ jobs:
       # --- Logic for VMs (BSDs) ---
       - name: Run Tests (FreeBSD)
         if: matrix.os.name == 'FreeBSD'
-        uses: vmactions/freebsd-vm@ba6bedee4a4884da2b782a41a64329a1c8e42ffb # v1.3.8
+        uses: vmactions/freebsd-vm@262fcf6e3e09d447753de95ad05d006c26e11f22 # v1.3.9
         with:
           usesh: true
           sync: rsync
