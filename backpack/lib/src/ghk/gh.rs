@@ -3,6 +3,8 @@ use indicatif::{ProgressBar, ProgressStyle};
 use std::process::{Command, Stdio};
 use std::time::Duration;
 
+use crate::ghk::config::Config;
+
 /// Login to GitHub via gh CLI
 pub fn login() -> anyhow::Result<()> {
     let status = Command::new("gh")
@@ -38,6 +40,15 @@ pub fn loggedin() -> bool {
         .status()
         .map(|s| s.success())
         .unwrap_or(false)
+}
+
+/// Get copyright holder name
+pub fn copyright() -> anyhow::Result<String> {
+    let cfg = Config::load();
+    match cfg.org.as_deref() {
+        Some(org) => Ok(org.to_string()),
+        _ => whoami(),
+    }
 }
 
 /// Get current logged in username

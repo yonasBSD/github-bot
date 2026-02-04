@@ -34,7 +34,7 @@ pub fn run(kind: Option<LicenseKind>) -> Result<()> {
     };
 
     let year = chrono::Local::now().year();
-    let author = gh::whoami().unwrap_or_else(|_| "Your Name".to_string());
+    let author = gh::copyright().unwrap_or_else(|_| "Your Name".to_string());
 
     let content = match license {
         LicenseKind::Mit => format!(
