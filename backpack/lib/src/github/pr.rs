@@ -1,4 +1,4 @@
-use crate::github::{DEPENDABOT_USER, User, Client};
+use crate::github::{Client, DEPENDABOT_USER, User};
 use serde::Deserialize;
 use std::process::{Command, exit};
 
@@ -16,16 +16,24 @@ pub fn list_dependabot_prs(
 ) -> Result<Vec<PullRequest>, Box<dyn std::error::Error + Send + Sync>> {
     let output = Command::new("gh")
         .args([
-            "pr", "list",
-            "--repo", repo,
-            "--state", "open",
-            "--author", DEPENDABOT_USER,
-            "--json", "number,title,author",
+            "pr",
+            "list",
+            "--repo",
+            repo,
+            "--state",
+            "open",
+            "--author",
+            DEPENDABOT_USER,
+            "--json",
+            "number,title,author",
         ])
         .output()?;
 
     if !output.status.success() {
-        eprintln!("❌ `gh pr list` failed: {}", String::from_utf8_lossy(&output.stderr));
+        eprintln!(
+            "❌ `gh pr list` failed: {}",
+            String::from_utf8_lossy(&output.stderr)
+        );
         exit(1);
     }
 
@@ -48,7 +56,9 @@ pub fn list_dependabot_prs(
         .map(|r| PullRequest {
             number: r.number,
             title: r.title,
-            user: User { login: r.author.login },
+            user: User {
+                login: r.author.login,
+            },
         })
         .collect();
 
@@ -78,8 +88,11 @@ fn merge_pr(repo: &str, pr_id: &str) -> bool {
 
     let status = Command::new("gh")
         .args([
-            "pr", "merge", pr_id,
-            "--repo", repo,
+            "pr",
+            "merge",
+            pr_id,
+            "--repo",
+            repo,
             "--squash",
             "--delete-branch",
         ])
