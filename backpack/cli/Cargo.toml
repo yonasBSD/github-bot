@@ -21,7 +21,7 @@ tracing = { workspace = true }
 tracing-subscriber = { version = "0.3.22", features = ["env-filter", "json"] }
 terminal-banner = { workspace = true }
 rootcause = "0.12.0"
-rootcause-backtrace = "0.11.1"
+rootcause-backtrace = "0.12.0"
 tokio = { workspace = true }
 env-rs = { git = "https://github.com/yonasBSD/env.rs", version = "0.1.0" }
 
