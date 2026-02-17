@@ -138,7 +138,13 @@ pub fn forkrepo(repo: &str, owner: &str) -> anyhow::Result<()> {
 
     let mut fork_target = format!("{owner}/{repo_name}");
 
-    let mut args = vec!["repo", "fork", repo, "--default-branch-only", "--clone=false"];
+    let mut args = vec![
+        "repo",
+        "fork",
+        repo,
+        "--default-branch-only",
+        "--clone=false",
+    ];
 
     let me = whoami().unwrap_or_default();
     if owner != me {
