@@ -3,6 +3,7 @@ pub mod clone;
 pub mod completions;
 pub mod config;
 pub mod create;
+pub mod fork;
 pub mod diff;
 pub mod history;
 pub mod ignore;

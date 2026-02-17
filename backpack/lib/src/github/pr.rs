@@ -13,7 +13,7 @@ pub fn list_dependabot_prs(
     _client: &Client,
     repo: &str,
     _token: &str,
-) -> Result<Vec<PullRequest>, Box<dyn std::error::Error + Send + Sync>> {
+) -> anyhow::Result<Vec<PullRequest>> {
     let output = Command::new("gh")
         .args([
             "pr",
@@ -70,7 +70,7 @@ pub fn process_pr(
     repo: &str,
     _token: &str,
     pr: &PullRequest,
-) -> Result<bool, Box<dyn std::error::Error + Send + Sync>> {
+) -> anyhow::Result<bool> {
     let pr_id = pr.number.to_string();
 
     let merged = merge_pr(repo, &pr_id);
