@@ -36,6 +36,7 @@ Integrates [ghk](https://github.com/bymehul/ghk) with custom commands, and plugi
 | `init` | | Start tracking folder | `git init` |
 | `login` / `logout` | | GitHub auth | `gh auth login` |
 | `create` | | Create repo on GitHub | `gh repo create` |
+| `fork` | | Fork repo on GitHub | `gh repo fork` |
 | `push` | `save` | Save changes | `git add -A && git commit && git push` |
 | `pull` | `sync` | Download changes | `git pull` |
 | `clone <repo>` | `download` | Download repo | `gh repo clone` |
