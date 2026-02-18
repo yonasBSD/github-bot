@@ -35,7 +35,6 @@ jobs:
             objects.githubusercontent.com:443
             static.rust-lang.org:443
             index.crates.io:443
-            api.securityscorecards.dev:443
 
       - name: 'Checkout Repository'
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

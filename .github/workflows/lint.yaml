@@ -1,19 +1,25 @@
 name: Linting
 
 on:
-  workflow_call:
-  pull_request:
-  push:
-    branches:
-      - main
+  workflow_run:
+    workflows: ["Test with Code Coverage"]
+    types:
+      - completed
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
+  # The "Gatekeeper" - This is the only place you need the 'if' logic
+  gatekeeper:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - run: echo "Upstream tests passed. Proceeding with linting..."
 
   fmt:
     name: Rustfmt and treefmt
+    needs: gatekeeper # Depends on the gatekeeper passing
     runs-on: ubuntu-latest
     env:
       SCCACHE_GHA_ENABLED: "true"
@@ -44,22 +50,15 @@ jobs:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
       - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
 
-      - name: Cargo Format
-        uses: yonasBSD/toolkit@7757e45441401d468ec049000c61571426a47de4 # v1.0.0
-        with:
-          run: |
-            cargo format --version
-            cargo clippy --fix --workspace
-            cargo format --check
-
       - name: Tree Format
-        uses: yonasBSD/toolkit@7757e45441401d468ec049000c61571426a47de4 # v1.0.0
+        uses: yonasBSD/toolkit@e3156a095eb4a759778ad8ef10dfd58dd00993e6 # v1.0.0
         with:
           run: |
             treefmt
 
   clippy:
     name: Clippy
+    needs: gatekeeper # Depends on the gatekeeper passing
     runs-on: ubuntu-latest
     env:
       SCCACHE_GHA_ENABLED: "true"
@@ -100,37 +99,3 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           args: --all-targets --all-features
           name: Clippy Output
-
-  # FIXME: https://github.com/yonasBSD/rust-ci-github-actions-workflow/issues/82
-  #semver:
-  #  name: Check semver
-  #  runs-on: ubuntu-latest
-  #  env:
-  #    SCCACHE_GHA_ENABLED: "true"
-  #    RUSTC_WRAPPER: "sccache"
-  #  steps:
-  #    - name: Harden Runner
- # v2.14.1
-  #      with:
-  #        disable-sudo: true
-  #        egress-policy: block
-  #        allowed-endpoints: >
-  #          api.deps.dev:443
-  #          api.github.com:443
-  #          api.osv.dev:443
-  #          api.scorecard.dev:443
-  #          fulcio.sigstore.dev:443
-  #          github.com:443
-  #          oss-fuzz-build-logs.storage.googleapis.com:443
-  #          rekor.sigstore.dev:443
-  #          tuf-repo-cdn.sigstore.dev:443
-  #          www.bestpractices.dev:443
-  #          objects.githubusercontent.com:443
-  #          release-assets.githubusercontent.com:443
-  #          static.rust-lang.org:443
-  #          index.crates.io:443
-  #          static.crates.io:443
-  #
- # v6.0.2
-  #    - uses: mozilla-actions/sccache-action@7d986dd989559c6ecdb630a3fd2557667be217ad # v0.0.9
-  #    - uses: obi1kenobi/cargo-semver-checks-action@5b298c9520f7096a4683c0bd981a7ac5a7e249ae # v2.8
