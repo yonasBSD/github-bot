@@ -126,6 +126,70 @@ pub fn createrepo(name: &str, private: bool) -> anyhow::Result<()> {
     Ok(())
 }
 
+/// Fork an existing repository
+pub fn forkrepo(repo: &str, owner: &str) -> anyhow::Result<()> {
+    let spinner = makespinner("Forking repository on GitHub...");
+
+    let repo_name = repo
+        .trim_end_matches('/')
+        .rsplit('/')
+        .next()
+        .context("Could not determine repo name")?;
+
+    let mut fork_target = format!("{owner}/{repo_name}");
+
+    let mut args = vec![
+        "repo",
+        "fork",
+        repo,
+        "--default-branch-only",
+        "--clone=false",
+    ];
+
+    let me = whoami().unwrap_or_default();
+    if owner != me {
+        args.extend(["--org", owner]);
+    }
+
+    let output = Command::new("gh")
+        .args(&args)
+        .output()
+        .context("Failed to fork repository")?;
+
+    spinner.finish_and_clear();
+
+    if !output.status.success() {
+        let err = String::from_utf8_lossy(&output.stderr);
+        bail!("Failed to fork repository: {}", err.trim());
+    }
+
+    // Capture actual fork name from gh output in case GitHub renamed it (e.g. openclaw-1)
+    let combined = format!(
+        "{}\n{}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr)
+    );
+    if let Some(actual) = combined
+        .split_whitespace()
+        .find(|s| s.contains(&format!("{owner}/")))
+    {
+        if let Some(idx) = actual.find(&format!("{owner}/")) {
+            fork_target = actual[idx..].trim_end_matches('/').to_string();
+        }
+    }
+
+    // Give GitHub a moment to finish provisioning the fork
+    let spinner = makespinner("Waiting for GitHub to provision fork...");
+    std::thread::sleep(Duration::from_secs(3));
+    spinner.finish_and_clear();
+
+    createruleset(&fork_target)?;
+    enable_dep_graph(&fork_target)?;
+    enable_security_updates(&fork_target)?;
+
+    Ok(())
+}
+
 /// Clone a repository by owner/repo name
 pub fn clonerepo(repo: &str, dir: Option<&str>) -> anyhow::Result<()> {
     let spinner = makespinner("Downloading repository...");

@@ -4,6 +4,7 @@ pub mod completions;
 pub mod config;
 pub mod create;
 pub mod diff;
+pub mod fork;
 pub mod history;
 pub mod ignore;
 pub mod init;

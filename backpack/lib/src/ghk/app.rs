@@ -35,6 +35,7 @@ pub fn run(cli: Args) -> Result<()> {
             GitCommands::Logout => crate::ghk::commands::logout::run(),
             GitCommands::User { command } => crate::ghk::commands::user::run(command),
             GitCommands::Create => crate::ghk::commands::create::run(),
+            GitCommands::Fork { repo } => crate::ghk::commands::fork::run(repo),
             GitCommands::Push | GitCommands::Save => crate::ghk::commands::push::run(),
             GitCommands::Pull | GitCommands::Sync => crate::ghk::commands::pull::run(),
             GitCommands::Clone { repo, dir } | GitCommands::Download { repo, dir } => {

@@ -142,6 +142,12 @@ pub enum GitCommands {
     /// Create a repository on GitHub
     Create,
 
+    /// Fork a repository on GitHub
+    Fork {
+        /// Repository (owner/name or URL)
+        repo: Option<String>,
+    },
+
     /// Save changes to GitHub
     Push,
 
