@@ -151,12 +151,15 @@ async fn main() -> anyhow::Result<()> {
                 &plugins,
                 Event::CliCommandExecutionRun {
                     command: "merge".into(),
-                    args: vec![target_repo.clone()],
+                    args: target_repo
+                        .as_deref()
+                        .map(|r| vec![r.to_string()])
+                        .unwrap_or_default(),
                 },
             )
-            .await;
+                .await;
 
-            merge::run(target_repo.clone())?;
+            merge::run(target_repo)?;
 
             plugins::broadcast_event(&plugins, Event::CliCommandExecutionEnd).await;
 

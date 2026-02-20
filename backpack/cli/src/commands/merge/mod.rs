@@ -5,11 +5,14 @@ use rootcause::prelude::*;
 use rootcause_backtrace::BacktraceCollector;
 use tracing::instrument;
 
-use github_bot_lib::cli::Args;
-use github_bot_lib::github;
+use github_bot_lib::{
+    cli::Args,
+    utils::get_repo,
+    github,
+};
 
 #[instrument(level = "debug", target = "errors::rootcause", name = "run")]
-pub fn run(repo: String) -> anyhow::Result<()> {
+pub fn run(target: Option<String>) -> anyhow::Result<()> {
     // Capture backtraces for all errors
     // Install hooks only if they are not already installed (helps tests run multiple times)
     let _ = Hooks::new()
@@ -28,6 +31,10 @@ pub fn run(repo: String) -> anyhow::Result<()> {
             .map_err(|report| anyhow::anyhow!("{report}"))?, // Manually convert Report to anyhow::Error
     };
 
+    // Get target repo
+    let repo = get_repo(target)?;
+
+    // Determine repo to merge
     println!("--- Dependabot PR Auto-Processor ---");
     println!("Target: {repo}");
 

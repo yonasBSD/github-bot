@@ -84,7 +84,7 @@ pub enum Commands {
     Merge {
         /// The GitHub repository (e.g., owner/repo). If omitted, detects from local git origin.
         #[arg(short, long)]
-        repo: String,
+        repo: Option<String>,
     },
 
     /// Work-in-progress commit helper. Push all uncommitted changes using the last commit.

@@ -4,6 +4,7 @@ pub mod git;
 pub mod github;
 pub mod log;
 pub mod plugins;
+pub mod utils;
 
 /// Multiplies two integers
 #[must_use]
