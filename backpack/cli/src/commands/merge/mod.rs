@@ -5,11 +5,7 @@ use rootcause::prelude::*;
 use rootcause_backtrace::BacktraceCollector;
 use tracing::instrument;
 
-use github_bot_lib::{
-    cli::Args,
-    utils::get_repo,
-    github,
-};
+use github_bot_lib::{cli::Args, github, utils::get_repo};
 
 #[instrument(level = "debug", target = "errors::rootcause", name = "run")]
 pub fn run(target: Option<String>) -> anyhow::Result<()> {
