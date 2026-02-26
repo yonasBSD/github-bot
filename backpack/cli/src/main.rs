@@ -157,7 +157,7 @@ async fn main() -> anyhow::Result<()> {
                         .unwrap_or_default(),
                 },
             )
-                .await;
+            .await;
 
             merge::run(target_repo)?;
 
