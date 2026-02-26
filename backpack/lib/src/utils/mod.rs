@@ -1,5 +1,5 @@
+use anyhow::{Context, Result, bail};
 use dialoguer::Input;
-use anyhow::{bail, Result, Context};
 use std::process::Command;
 
 /// Check if current directory is inside a git repo
