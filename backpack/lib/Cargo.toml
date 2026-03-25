@@ -61,7 +61,7 @@ clap_complete = "4.5.65"
 strum = { version = "0.28.0", features = ["derive"] }
 git2 = { workspace = true }
 chrono = "0.4.42"
-cliclack = "0.4.0"
+cliclack = "0.5.2"
 terminal-banner = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
 auth-git2 = "0.5.8"
