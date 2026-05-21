@@ -64,4 +64,4 @@ chrono = "0.4.42"
 cliclack = "0.4.0"
 terminal-banner = { workspace = true }
 tracing-subscriber = { workspace = true, features = ["env-filter"] }
-auth-git2 = "0.5.8"
+auth-git2 = "0.6.0"
