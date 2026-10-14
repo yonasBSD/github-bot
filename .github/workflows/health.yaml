@@ -44,7 +44,7 @@ jobs:
         with:
           toolchain: nightly
       - name: Install cargo-binstall
-        uses: cargo-bins/cargo-binstall@7691a5b29cda4f5499b819e5618012ba4b6c3334 # v1.17.5
+        uses: cargo-bins/cargo-binstall@3be4ad2b146f3302f92e5956c54fedbb6ae8cccc # v1.25.3
       - name: Install and Run cargo-outdated
         run: |
           cargo binstall -y cargo-outdated
